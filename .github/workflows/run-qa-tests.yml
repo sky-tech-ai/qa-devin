@@ -1,0 +1,54 @@
+name: Run QA Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      tests:
+        description: 'Comma-separated test names to run (leave empty for all tests)'
+        required: false
+        default: ''
+        type: string
+      url:
+        description: 'Base URL for testing'
+        required: false
+        default: 'https://dev.app.usesky.ai/'
+        type: string
+
+jobs:
+  run-qa-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run QA tests
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+        run: |
+          if [ -n "${{ inputs.tests }}" ]; then
+            python3 run_qa_devin.py --tests "${{ inputs.tests }}" --url "${{ inputs.url }}"
+          else
+            python3 run_qa_devin.py --url "${{ inputs.url }}"
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-test-results
+          path: |
+            *.log
+            *.json
+          if-no-files-found: ignore
