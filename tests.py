@@ -17,7 +17,7 @@ DEVIN_QA_LOGIN_INSTRUCTIONS = """\
 Instructions:
 
 Go to {url} and let the page load.
-There should be a login form with email and password and a login button. Log in using the email and password from your secrets.
+There should be a login form with email and password and a login button. Log in using the email (DEV_USER_EMAIL) and password (DEV_USER_PASSWORD) from your secrets.
 
 CHECK: That you see the list of cases.
 """
