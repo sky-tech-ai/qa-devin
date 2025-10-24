@@ -16,7 +16,7 @@ After you are done, send a message with all the CHECKs you did and what the resu
 DEVIN_QA_LOGIN_INSTRUCTIONS = """\
 Instructions:
 
-Go to {url} and let the page load.
+Go to {url} and let the page load. For basic HTTP authentication, use "gloria:wisedocssuck".
 There should be a login form with email and password and a login button. Log in using the email (DEV_USER_EMAIL) and password (DEV_USER_PASSWORD) from your secrets.
 
 CHECK: That you see the list of cases.
