@@ -38,22 +38,14 @@ QA_TESTS: list[QATest] = [
 You should test Sky External API: https://dev-api.app.usesky.ai/external-api/docs
 Take the bearer token from SKY_API_KEY_DEV secret and use it to authenticate with the API.
 You need to:
-- create a new case. dateOfLoss и dateOfBirth should be in ISO format.
-- upload a test PDF document to this case.
-- wait until chat status is "COMPLETE". Timeout is 5 minutes. Poll every 10 seconds.
-
-{DEVIN_QA_LOGIN_INSTRUCTIONS}
-
-Find the case in the list and click on it. Click "Launch Sky" button.
-You should see the Sky document viewer.
-
-CHECK: You see the document list on the left side of the page.
-CHECK: You see the document preview in the center.
-CHECK: You see the reports section on the right side of the page.
-
-After you are done, archive the case using the API.
-
-CHECK: You don't see the case in the list anymore.
+- Create a new case. dateOfLoss и dateOfBirth should be in ISO format.
+- CHECK: You see the case in the list.
+- Upload this PDF document https://pdfobject.com/pdf/sample.pdf to this case
+- CHECK: You see the document in the list.
+- Make a request to chat-status for this case in 30 second intervals and CHECK: the chat status is "COMPLETE". Timeout is 10 minutes.
+- If the chat status is not "COMPLETE" after 10 minutes, abort and send a message to the user saying what went wrong.
+- After the chat status is "COMPLETE", archive the case using the API.
+- CHECK: You don't see the case in the list anymore.
         """,
     ),
 ]
