@@ -38,7 +38,7 @@ QA_TESTS: list[QATest] = [
 You should test Sky External API: https://dev-api.app.usesky.ai/external-api/docs
 Take the bearer token from SKY_API_KEY_DEV secret and use it to authenticate with the API.
 You need to:
-- create a new case
+- create a new case. dateOfLoss и dateOfBirth should be in ISO format.
 - upload a test PDF document to this case.
 - wait until chat status is "completed" and you see the case in the list
 
