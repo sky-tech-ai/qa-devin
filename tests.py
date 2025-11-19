@@ -40,7 +40,7 @@ Take the bearer token from SKY_API_KEY_DEV secret and use it to authenticate wit
 You need to:
 - create a new case. dateOfLoss и dateOfBirth should be in ISO format.
 - upload a test PDF document to this case.
-- wait until chat status is "completed" and you see the case in the list
+- wait until chat status is "COMPLETE". Timeout is 5 minutes. Poll every 10 seconds.
 
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
