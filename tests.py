@@ -33,10 +33,27 @@ def create_qa_test(test_name: str, user_prompt: str) -> QATest:
 
 QA_TESTS: list[QATest] = [
     create_qa_test(
-        test_name="check-the-case-page-load",
-        user_prompt=f"""{DEVIN_QA_LOGIN_INSTRUCTIONS}
-Find the last case in the case table and click on it.
-CHECK: That you are on the case page and see its name on top, date of birth, date of loss, claim or case #, total number of pages and created by.
-CHECK: You see a list of documents associated with the case.""",
+        test_name="test-external-api",
+        user_prompt=f"""
+You should test Sky External API: https://dev-api.app.usesky.ai/external-api/docs
+Take the bearer token from SKY_API_KEY_DEV secret and use it to authenticate with the API.
+You need to:
+- create a new case
+- upload a test PDF document to this case.
+- wait until chat status is "completed" and you see the case in the list
+
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+Find the case in the list and click on it. Click "Launch Sky" button.
+You should see the Sky document viewer.
+
+CHECK: You see the document list on the left side of the page.
+CHECK: You see the document preview in the center.
+CHECK: You see the reports section on the right side of the page.
+
+After you are done, archive the case using the API.
+
+CHECK: You don't see the case in the list anymore.
+        """,
     ),
 ]
