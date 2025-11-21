@@ -30,7 +30,7 @@ QA_TESTS: list[QATest] = [
     create_qa_test(
         test_name="test-external-api",
         user_prompt=f"""
-You should test Sky External API: https://dev-api.app.usesky.ai/external-api/docs
+You should test Sky External API: https://dev-api.app.usesky.ai/external-api/docs-json
 Take the bearer token from SKY_API_KEY_DEV secret and use it to authenticate with the API.
 You need to:
 - Create a new case. dateOfLoss и dateOfBirth should be in ISO format.
