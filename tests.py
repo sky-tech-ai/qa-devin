@@ -54,8 +54,9 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
 
 ## Test Setup Requirements
 - Download the zip archive with test case from https://dev-assets.app.usesky.ai/previews/johndoejunior.zip
-- Create a new test case & upload files to it using Sky API (https://dev-api.app.usesky.ai/external-api/docs): auth token is in secrets
-- Wait until case is in "COMPLETED" status. You can poll chat-status endpoint for that. Wait up to 10 minutes, if it is not ready - STOP, and report failure.
+- Log in to the app.
+- Create a new test case & upload files to it
+- Wait until "Launch Sky" button is enabled. You can reload the page every 30 seconds up to 10 minutes. If it is not enabled after 10 minutes, abort and send a message to the user saying what went wrong.
 - Click "Launch Sky" button in the case page. CHECK: The button is enabled.
 - CHECK you have at least 3-4 categories with 2-3 sections each in the doc list
 
