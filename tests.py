@@ -53,11 +53,9 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
 ## Test Setup Requirements
-- Download the zip archive with test case from https://dev-assets.app.usesky.ai/previews/johndoejunior.zip
 - Log in to the app.
-- Create a new test case & upload files to it
-- Wait until "Launch Sky" button is enabled. You can reload the page every 30 seconds up to 10 minutes. If it is not enabled after 10 minutes, abort and send a message to the user saying what went wrong.
-- Click "Launch Sky" button in the case page. CHECK: The button is enabled.
+- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Click "Launch Sky" button
 - CHECK you have at least 3-4 categories with 2-3 sections each in the doc list
 
 ---
