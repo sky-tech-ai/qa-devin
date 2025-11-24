@@ -30,12 +30,12 @@ QA_TESTS: list[QATest] = [
     create_qa_test(
         test_name="test-external-api",
         user_prompt=f"""
-You should test Sky External API: https://dev-api.app.usesky.ai/external-api/docs-json
+You should test Sky External API: {{external_api_specs_url}}
 Take the bearer token from SKY_API_KEY_DEV secret and use it to authenticate with the API.
 You need to:
 - Create a new case. dateOfLoss и dateOfBirth should be in ISO format.
 - CHECK: You see the case in the list.
-- Upload this PDF document https://pdfobject.com/pdf/sample.pdf to this case
+- Upload this PDF document {{sample_pdf_url}} to this case
 - CHECK: You see the document in the list.
 - Make a request to chat-status for this case in 30 second intervals and CHECK: the chat status is "COMPLETE". Timeout is 10 minutes.
 - If the chat status is not "COMPLETE" after 10 minutes, abort and send a message to the user saying what went wrong.

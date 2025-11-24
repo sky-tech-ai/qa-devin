@@ -126,13 +126,19 @@ async def send_final_results_to_slack(results: list[QATestResult]):
 async def run_tests_and_send_to_slack(
     url: str,
     test_names: list[str] | None,
+    external_api_specs_url: str,
+    sample_pdf_url: str,
 ):
     eval_tasks = []
     session_links: list[tuple[str, str, str]] = []
     for test in QA_TESTS:
         if test_names and test["test_name"] not in test_names:
             continue
-        prompt = test["user_prompt"].format(url=url)
+        prompt = test["user_prompt"].format(
+            url=url,
+            external_api_specs_url=external_api_specs_url,
+            sample_pdf_url=sample_pdf_url,
+        )
         session_response = await devin_api_client.start_session(prompt)
         assert session_response["session_id"] is not None
         session_id = session_response["session_id"]
@@ -192,12 +198,32 @@ async def main():
         "--tests", type=str, help="Comma separated test names to run", default=None
     )
     parser.add_argument(
-        "--url", type=str, help="Base URL for Devin", default="app.devin.ai"
+        "--url",
+        type=str,
+        help="Base URL for testing",
+        default="https://dev.app.usesky.ai/",
+    )
+    parser.add_argument(
+        "--external-api-specs-url",
+        type=str,
+        help="URL for external API specs",
+        default="https://dev-api.app.usesky.ai/external-api/docs-json",
+    )
+    parser.add_argument(
+        "--sample-pdf-url",
+        type=str,
+        help="URL for sample PDF document",
+        default="https://pdfobject.com/pdf/sample.pdf",
     )
     args = parser.parse_args()
 
     test_names = args.tests.split(",") if args.tests else None
-    await run_tests_and_send_to_slack(url=args.url, test_names=test_names)
+    await run_tests_and_send_to_slack(
+        url=args.url,
+        test_names=test_names,
+        external_api_specs_url=args.external_api_specs_url,
+        sample_pdf_url=args.sample_pdf_url,
+    )
 
 
 if __name__ == "__main__":

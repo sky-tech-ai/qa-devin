@@ -13,6 +13,16 @@ on:
         required: false
         default: 'https://dev.app.usesky.ai/'
         type: string
+      external_api_specs_url:
+        description: 'URL for external API specs'
+        required: false
+        default: 'https://dev-api.app.usesky.ai/external-api/docs-json'
+        type: string
+      sample_pdf_url:
+        description: 'URL for sample PDF document'
+        required: false
+        default: 'https://pdfobject.com/pdf/sample.pdf'
+        type: string
 
 jobs:
   run-qa-tests:
@@ -38,9 +48,9 @@ jobs:
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
         run: |
           if [ -n "${{ inputs.tests }}" ]; then
-            python3 run_qa_devin.py --tests "${{ inputs.tests }}" --url "${{ inputs.url }}"
+            python3 run_qa_devin.py --tests "${{ inputs.tests }}" --url "${{ inputs.url }}" --external-api-specs-url "${{ inputs.external_api_specs_url }}" --sample-pdf-url "${{ inputs.sample_pdf_url }}"
           else
-            python3 run_qa_devin.py --url "${{ inputs.url }}"
+            python3 run_qa_devin.py --url "${{ inputs.url }}" --external-api-specs-url "${{ inputs.external_api_specs_url }}" --sample-pdf-url "${{ inputs.sample_pdf_url }}"
           fi
 
       - name: Upload test results
