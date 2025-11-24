@@ -128,6 +128,7 @@ async def run_tests_and_send_to_slack(
     test_names: list[str] | None,
     external_api_specs_url: str,
     sample_pdf_url: str,
+    johndoejunior_zip_url: str,
 ):
     eval_tasks = []
     session_links: list[tuple[str, str, str]] = []
@@ -138,6 +139,7 @@ async def run_tests_and_send_to_slack(
             url=url,
             external_api_specs_url=external_api_specs_url,
             sample_pdf_url=sample_pdf_url,
+            johndoejunior_zip_url=johndoejunior_zip_url,
         )
         session_response = await devin_api_client.start_session(prompt)
         assert session_response["session_id"] is not None
@@ -215,6 +217,12 @@ async def main():
         help="URL for sample PDF document",
         default="https://pdfobject.com/pdf/sample.pdf",
     )
+    parser.add_argument(
+        "--johndoejunior-zip-url",
+        type=str,
+        help="URL for John Doe Junior zip archive",
+        default="https://dev-assets.app.usesky.ai/previews/John_Doe_Junior.zip",
+    )
     args = parser.parse_args()
 
     test_names = args.tests.split(",") if args.tests else None
@@ -223,6 +231,7 @@ async def main():
         test_names=test_names,
         external_api_specs_url=args.external_api_specs_url,
         sample_pdf_url=args.sample_pdf_url,
+        johndoejunior_zip_url=args.johndoejunior_zip_url,
     )
 
 

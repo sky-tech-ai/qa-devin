@@ -17,10 +17,17 @@ DEVIN_QA_LOGIN_INSTRUCTIONS = """\
 For basic HTTP authentication, use "gloria:wisedocssuck". Log in using the email (DEV_USER_EMAIL) and password (DEV_USER_PASSWORD) from your secrets.
 """
 
-DOCLIST_TEST_SETUP = """\
+DOCLIST_TEST_SETUP = f"""\
 ## Test Setup Requirements
 - Log in to the app.
-- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Create a new case.
+- Download the zip archive from {{johndoejunior_zip_url}}, extract it
+- Take the bearer token from SKY_API_KEY_DEV secret and use it to authenticate with the External API: {{external_api_specs_url}}.
+- Create a new case using the External API: {{external_api_specs_url}}.
+- Upload files to the case using the External API: {{external_api_specs_url}}.
+- Keep making requests to chat-status for this case in 30 second intervals and CHECK: the chat status is "COMPLETE". Timeout is 15 minutes.
+- Log in to the app.
+- Open the case in the app.
 - Click "Launch Sky" button
 """
 

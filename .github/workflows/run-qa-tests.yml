@@ -23,6 +23,11 @@ on:
         required: false
         default: 'https://pdfobject.com/pdf/sample.pdf'
         type: string
+      johndoejunior_zip_url:
+        description: 'URL for John Doe Junior zip archive'
+        required: false
+        default: 'https://dev-assets.app.usesky.ai/previews/John_Doe_Junior.zip'
+        type: string
 
 jobs:
   run-qa-tests:
@@ -48,9 +53,9 @@ jobs:
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
         run: |
           if [ -n "${{ inputs.tests }}" ]; then
-            python3 run_qa_devin.py --tests "${{ inputs.tests }}" --url "${{ inputs.url }}" --external-api-specs-url "${{ inputs.external_api_specs_url }}" --sample-pdf-url "${{ inputs.sample_pdf_url }}"
+            python3 run_qa_devin.py --tests "${{ inputs.tests }}" --url "${{ inputs.url }}" --external-api-specs-url "${{ inputs.external_api_specs_url }}" --sample-pdf-url "${{ inputs.sample_pdf_url }}" --johndoejunior-zip-url "${{ inputs.johndoejunior_zip_url }}"
           else
-            python3 run_qa_devin.py --url "${{ inputs.url }}" --external-api-specs-url "${{ inputs.external_api_specs_url }}" --sample-pdf-url "${{ inputs.sample_pdf_url }}"
+            python3 run_qa_devin.py --url "${{ inputs.url }}" --external-api-specs-url "${{ inputs.external_api_specs_url }}" --sample-pdf-url "${{ inputs.sample_pdf_url }}" --johndoejunior-zip-url "${{ inputs.johndoejunior_zip_url }}"
           fi
 
       - name: Upload test results
