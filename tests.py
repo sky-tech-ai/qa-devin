@@ -56,7 +56,6 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
 - Log in to the app.
 - Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
 - Click "Launch Sky" button
-- CHECK you have at least 3-4 categories with 2-3 sections each in the doc list
 
 ---
 
