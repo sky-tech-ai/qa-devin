@@ -44,10 +44,10 @@ You need to:
         """,
     ),
     create_qa_test(
-        test_name="test-doclist",
+        test_name="test-doclist-section-ops",
         user_prompt=f"""
 ## Objective
-Thoroughly test all functionality of the document list (doc list) feature, including category management, section operations, drag-and-drop, batch operations, export, and edge cases.
+Test all section operations in the document list including rename, move, split, merge, and delete.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -59,9 +59,9 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
 
 ---
 
-## 1. Section Operations Testing
+## Section Operations Testing
 
-### 1.1 Rename Section
+### Rename Section
 - Click the section actions menu (three dots) and select "Rename"
 - CHECK inline input appears with current name pre-filled
 - Test scenarios:
@@ -72,7 +72,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK name updates across UI immediately (optimistic update)
   - CHECK persistence after page refresh
 
-### 1.2 Move Section to Different Category
+### Move Section to Different Category
 - Select "Move To..." from section actions menu
 - CHECK dropdown shows all available categories
 - Move section to a different category
@@ -81,7 +81,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
 - Test moving to the same category (should be no-op or prevented)
 - CHECK section order in target category
 
-### 1.3 Split Section
+### Split Section
 - Find a section with 2+ pages
 - Select "Split" from section actions
 - CHECK split UI appears allowing you to choose split point
@@ -93,7 +93,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Page thumbnails display correctly
 - CHECK "Split" option is disabled for single-page sections
 
-### 1.4 Merge Sections
+### Merge Sections
 - Test merge via section actions menu:
   - Select "Merge" from a section's actions
   - Choose target section from dropdown
@@ -106,7 +106,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
 - CHECK page count updates correctly
 - Test merging sections from different categories (should move first)
 
-### 1.5 Delete Section
+### Delete Section
 - Select "Delete" from section actions
 - CHECK confirmation dialog appears
 - Test:
@@ -115,12 +115,27 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK page count updates for category
   - CHECK deletion persists after refresh
 - CHECK "Delete" is disabled when only one section exists in fallback category
+        """,
+    ),
+    create_qa_test(
+        test_name="test-doclist-category-ops",
+        user_prompt=f"""
+## Objective
+Test all category operations in the document list including rename, sort, merge all, delete, and create.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+## Test Setup Requirements
+- Log in to the app.
+- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Click "Launch Sky" button
 
 ---
 
-## 2. Category Operations Testing
+## Category Operations Testing
 
-### 2.1 Rename Category
+### Rename Category
 - Click category actions menu and select "Rename"
 - CHECK inline input appears with current name
 - Test scenarios:
@@ -131,7 +146,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Cancel with Escape, confirm with Enter
   - CHECK name updates across all instances
 
-### 2.2 Sort Sections in Category
+### Sort Sections in Category
 - Test "Sort by Name":
   - Sort ascending (A-Z)
   - Sort descending (Z-A)
@@ -143,7 +158,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK correct date-based ordering
   - CHECK persistence
 
-### 2.3 Merge All Sections in Category
+### Merge All Sections in Category
 - Select "Merge All" from category actions
 - CHECK confirmation dialog shows correct section count
 - Confirm merge
@@ -154,7 +169,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Merged section uses appropriate name
   - Category now has only one section
 
-### 2.4 Delete Category
+### Delete Category
 - Select "Delete" from category actions
 - CHECK dialog shows:
   - Category name
@@ -167,7 +182,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK category disappears
   - CHECK you cannot delete the last remaining category
 
-### 2.5 Create New Category
+### Create New Category
 - Click "Add Category" button in doc list actions bar
 - CHECK:
   - New category appears with placeholder name
@@ -177,12 +192,27 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Can cancel creation (Escape key)
   - Category saves with Enter key
   - Appears in correct order
+        """,
+    ),
+    create_qa_test(
+        test_name="test-doclist-drag-drop",
+        user_prompt=f"""
+## Objective
+Test all drag and drop functionality in the document list including reordering categories, sections, and pages.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+## Test Setup Requirements
+- Log in to the app.
+- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Click "Launch Sky" button
 
 ---
 
-## 3. Drag & Drop Testing
+## Drag & Drop Testing
 
-### 3.1 Reorder Categories
+### Reorder Categories
 - Drag category by the grip handle (vertical lines icon)
 - Test:
   - Move category up in list
@@ -193,7 +223,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK visual feedback during drag
   - CHECK order persists after refresh
 
-### 3.2 Reorder Sections Within Category
+### Reorder Sections Within Category
 - Drag section within same category
 - Test:
   - Move section up
@@ -203,7 +233,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK section order updates immediately
   - Check persistence after refresh
 
-### 3.3 Move Sections Between Categories
+### Move Sections Between Categories
 - Drag section from one category to another
 - Test:
   - Drop into different category
@@ -214,7 +244,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK section maintains its pages/data
   - Test with multiple rapid moves (stress test)
 
-### 3.4 Reorder Pages Within Section
+### Reorder Pages Within Section
 - Expand a section to show page thumbnails
 - Drag individual pages to reorder
 - Test:
@@ -226,7 +256,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK thumbnails display in correct order
   - Check persistence
 
-### 3.5 Drag & Drop Edge Cases
+### Drag & Drop Edge Cases
 - Test with slow internet (enable throttling)
 - Test dragging while API call is in-flight
 - Test dragging immediately after another drag
@@ -234,12 +264,27 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
 - Test with very large sections (50+ pages)
 - CHECK error handling for failed drag operations
 - Test drag on touch devices (mobile)
+        """,
+    ),
+    create_qa_test(
+        test_name="test-doclist-batch-ops",
+        user_prompt=f"""
+## Objective
+Test batch operations and multi-select functionality in the document list.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+## Test Setup Requirements
+- Log in to the app.
+- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Click "Launch Sky" button
 
 ---
 
-## 4. Batch Operations & Multi-Select Testing
+## Batch Operations & Multi-Select Testing
 
-### 4.1 Multi-Select Sections
+### Multi-Select Sections
 - Test selection methods:
   - Click section checkbox to select individual section
   - Shift+click to select range of sections
@@ -253,7 +298,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Can deselect individual sections
   - Can clear all selections
 
-### 4.2 Merge Multiple Selected Sections
+### Merge Multiple Selected Sections
 - Select 2+ sections (same or different categories)
 - Click "Merge Selected" button
 - CHECK:
@@ -264,7 +309,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Selection clears after merge
   - Page count updates correctly
 
-### 4.3 Move Multiple Selected Sections
+### Move Multiple Selected Sections
 - Select multiple sections
 - Click "Move Selected" button
 - Choose target category from dropdown
@@ -275,7 +320,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Selection clears after move
   - Works with sections from different source categories
 
-### 4.4 Delete Multiple Selected Sections
+### Delete Multiple Selected Sections
 - Select multiple sections
 - Click "Delete Selected" button
 - CHECK:
@@ -284,12 +329,27 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Page counts update
   - Cannot delete if it would leave category empty (test edge case)
   - Selection clears after deletion
+        """,
+    ),
+    create_qa_test(
+        test_name="test-doclist-export",
+        user_prompt=f"""
+## Objective
+Test export functionality in the document list including PDF export and table of contents.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+## Test Setup Requirements
+- Log in to the app.
+- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Click "Launch Sky" button
 
 ---
 
-## 5. Export Functionality Testing
+## Export Functionality Testing
 
-### 5.1 Enter Export Mode
+### Enter Export Mode
 - Click export button in doc list actions
 - CHECK:
   - UI switches to export mode
@@ -298,7 +358,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Other actions are disabled/hidden in export mode
   - Can exit export mode
 
-### 5.2 Select Sections for Export
+### Select Sections for Export
 - Test selection in export mode:
   - Select individual sections
   - Select entire category
@@ -307,7 +367,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK selection indicators
   - CHECK page count total updates
 
-### 5.3 Export as PDF
+### Export as PDF
 - Select sections and click "Export PDF"
 - CHECK:
   - Loading indicator appears
@@ -318,7 +378,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - PDF quality is acceptable
   - Export mode exits after success
 
-### 5.4 Export TOC Only
+### Export TOC Only
 - Select sections and choose "TOC Only" option
 - Export and CHECK:
   - Table of contents generated
@@ -326,18 +386,33 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Page numbers are correct
   - Formatting is proper
 
-### 5.5 Export Edge Cases
+### Export Edge Cases
 - Test with no sections selected (should disable export button)
 - Test with very large selection (50+ pages)
 - Test export failure scenarios (network error)
 - Test canceling export mid-process
 - Test multiple rapid export attempts
+        """,
+    ),
+    create_qa_test(
+        test_name="test-doclist-search",
+        user_prompt=f"""
+## Objective
+Test filter and search functionality in the document list.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+## Test Setup Requirements
+- Log in to the app.
+- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Click "Launch Sky" button
 
 ---
 
-## 6. Filter & Search Testing
+## Filter & Search Testing
 
-### 6.1 Basic Search
+### Basic Search
 - Type in filter/search input at top of doc list
 - Test:
   - Search by section name (partial match)
@@ -347,7 +422,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Empty search (shows all)
   - Very long search query
 
-### 6.2 Fuzzy Search
+### Fuzzy Search
 - Test fuzzy matching:
   - Misspelled section names
   - Missing characters
@@ -355,7 +430,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - CHECK matches highlight correctly
   - CHECK non-matches are hidden
 
-### 6.3 Search with Highlighting
+### Search with Highlighting
 - Enter search term
 - CHECK:
   - Matching text is highlighted in yellow/accent color
@@ -363,18 +438,33 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Highlighting clears when search cleared
   - Categories with no matches collapse or hide
 
-### 6.4 Search Edge Cases
+### Search Edge Cases
 - Search while categories are collapsed
 - Search with active selection
 - Search in export mode
 - Clear search rapidly (type and clear multiple times)
 - Search with special regex characters (should escape)
+        """,
+    ),
+    create_qa_test(
+        test_name="test-doclist-duplicates",
+        user_prompt=f"""
+## Objective
+Test duplicate detection functionality in the document list.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+## Test Setup Requirements
+- Log in to the app.
+- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Click "Launch Sky" button
 
 ---
 
-## 7. Duplicate Detection Testing
+## Duplicate Detection Testing
 
-### 7.1 Find Duplicates
+### Find Duplicates
 - Click "Duplicates" button if available
 - CHECK:
   - UI shows duplicate detection results
@@ -382,23 +472,38 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Similarity percentage/score shown
   - Can navigate to each duplicate section
 
-### 7.2 Merge Duplicates
+### Merge Duplicates
 - From duplicate detection UI:
   - Select duplicate sections to merge
   - Confirm merge
   - CHECK sections combine correctly
   - CHECK duplicates list updates
 
-### 7.3 Dismiss Duplicates
+### Dismiss Duplicates
 - Test dismissing false positive duplicates
 - CHECK dismissed pairs don't reappear
 - Test re-running duplicate detection
+        """,
+    ),
+    create_qa_test(
+        test_name="test-doclist-expand-collapse",
+        user_prompt=f"""
+## Objective
+Test expand and collapse functionality in the document list.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+## Test Setup Requirements
+- Log in to the app.
+- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Click "Launch Sky" button
 
 ---
 
-## 8. Expand/Collapse Testing
+## Expand/Collapse Testing
 
-### 8.1 Category Accordion
+### Category Accordion
 - Click category header to expand/collapse
 - Test:
   - Single category expand/collapse
@@ -407,7 +512,7 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - State persists during session
   - Drag into collapsed category auto-expands
 
-### 8.2 Section Page Thumbnails
+### Section Page Thumbnails
 - Click section to expand page thumbnails
 - Test:
   - Thumbnails load correctly
@@ -415,6 +520,6 @@ Thoroughly test all functionality of the document list (doc list) feature, inclu
   - Lazy loading behavior
   - Thumbnail quality
   - Page numbers display correctly
-"""
+        """,
     ),
 ]
