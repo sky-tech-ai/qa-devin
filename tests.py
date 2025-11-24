@@ -17,6 +17,29 @@ DEVIN_QA_LOGIN_INSTRUCTIONS = """\
 For basic HTTP authentication, use "gloria:wisedocssuck". Log in using the email (DEV_USER_EMAIL) and password (DEV_USER_PASSWORD) from your secrets.
 """
 
+DOCLIST_TEST_SETUP = """\
+## Test Setup Requirements
+- Log in to the app.
+- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
+- Click "Launch Sky" button
+"""
+
+# Common CHECK patterns
+CHECK_PERSISTENCE = "CHECK persistence after page refresh"
+CHECK_ORDER_PERSISTS = "CHECK order persists after refresh"
+CHECK_PAGE_COUNT_UPDATES = "CHECK page count updates"
+CHECK_CONFIRMATION_DIALOG = "CHECK confirmation dialog appears"
+CHECK_SELECTION_CLEARS = "Selection clears after"
+
+MODAL_DUAL_PANE_CHECKS = """\
+- CHECK:
+  - A modal window opens
+  - Left pane displays the recognized text/content snippet
+  - Right pane displays the corresponding PDF page
+  - Both panes can be scrolled independently
+  - Closing the modal returns to the same state and scroll position
+"""
+
 
 def create_qa_test(test_name: str, user_prompt: str) -> QATest:
     user_prompt = QA_PREAMBLE + "\n\n" + user_prompt
@@ -52,10 +75,7 @@ Test all section operations in the document list including rename, move, split, 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
-## Test Setup Requirements
-- Log in to the app.
-- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
-- Click "Launch Sky" button
+{DOCLIST_TEST_SETUP}
 
 ---
 
@@ -70,14 +90,14 @@ Test all section operations in the document list including rename, move, split, 
   - Cancel rename with Escape key
   - Confirm with Enter key
   - CHECK name updates across UI immediately (optimistic update)
-  - CHECK persistence after page refresh
+  - {CHECK_PERSISTENCE}
 
 ### Move Section to Different Category
 - Select "Move To..." from section actions menu
 - CHECK dropdown shows all available categories
 - Move section to a different category
 - CHECK section disappears from source category and appears in target category
-- Check page count updates for both categories
+- {CHECK_PAGE_COUNT_UPDATES} for both categories
 - Test moving to the same category (should be no-op or prevented)
 - CHECK section order in target category
 
@@ -103,16 +123,16 @@ Test all section operations in the document list including rename, move, split, 
   - Click the merge line/button that appears
   - CHECK immediate merge with optimistic UI update
 - CHECK merged section name (should use first section's name)
-- CHECK page count updates correctly
+- {CHECK_PAGE_COUNT_UPDATES} correctly
 - Test merging sections from different categories (should move first)
 
 ### Delete Section
 - Select "Delete" from section actions
-- CHECK confirmation dialog appears
+- {CHECK_CONFIRMATION_DIALOG}
 - Test:
   - Confirm deletion - section should disappear
   - Cancel deletion - section remains
-  - CHECK page count updates for category
+  - {CHECK_PAGE_COUNT_UPDATES} for category
   - CHECK deletion persists after refresh
 - CHECK "Delete" is disabled when only one section exists in fallback category
         """,
@@ -126,10 +146,7 @@ Test all category operations in the document list including rename, sort, merge 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
-## Test Setup Requirements
-- Log in to the app.
-- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
-- Click "Launch Sky" button
+{DOCLIST_TEST_SETUP}
 
 ---
 
@@ -151,12 +168,12 @@ Test all category operations in the document list including rename, sort, merge 
   - Sort ascending (A-Z)
   - Sort descending (Z-A)
   - CHECK sections reorder alphabetically
-  - CHECK order persists after refresh
+  - {CHECK_ORDER_PERSISTS}
 - Test "Sort by Date":
   - Sort ascending (oldest first)
   - Sort descending (newest first)
   - CHECK correct date-based ordering
-  - CHECK persistence
+  - {CHECK_ORDER_PERSISTS}
 
 ### Merge All Sections in Category
 - Select "Merge All" from category actions
@@ -203,10 +220,7 @@ Test all drag and drop functionality in the document list including reordering c
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
-## Test Setup Requirements
-- Log in to the app.
-- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
-- Click "Launch Sky" button
+{DOCLIST_TEST_SETUP}
 
 ---
 
@@ -221,7 +235,7 @@ Test all drag and drop functionality in the document list including reordering c
   - Move to last position
   - Drop on invalid area (should snap back)
   - CHECK visual feedback during drag
-  - CHECK order persists after refresh
+  - {CHECK_ORDER_PERSISTS}
 
 ### Reorder Sections Within Category
 - Drag section within same category
@@ -231,7 +245,7 @@ Test all drag and drop functionality in the document list including reordering c
   - Drop between other sections
   - CHECK drop zone indicators appear
   - CHECK section order updates immediately
-  - Check persistence after refresh
+  - {CHECK_ORDER_PERSISTS}
 
 ### Move Sections Between Categories
 - Drag section from one category to another
@@ -240,7 +254,7 @@ Test all drag and drop functionality in the document list including reordering c
   - Drop into empty category (CHECK empty drop zone works)
   - Drop into collapsed category (should auto-expand)
   - CHECK section appears in new category
-  - CHECK page counts update for both categories
+  - {CHECK_PAGE_COUNT_UPDATES} for both categories
   - CHECK section maintains its pages/data
   - Test with multiple rapid moves (stress test)
 
@@ -254,7 +268,7 @@ Test all drag and drop functionality in the document list including reordering c
   - Rapid reordering (multiple quick moves)
   - CHECK page numbers update correctly
   - CHECK thumbnails display in correct order
-  - Check persistence
+  - {CHECK_ORDER_PERSISTS}
 
 ### Drag & Drop Edge Cases
 - Test with slow internet (enable throttling)
@@ -275,10 +289,7 @@ Test batch operations and multi-select functionality in the document list.
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
-## Test Setup Requirements
-- Log in to the app.
-- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
-- Click "Launch Sky" button
+{DOCLIST_TEST_SETUP}
 
 ---
 
@@ -306,8 +317,8 @@ Test batch operations and multi-select functionality in the document list.
   - Merged section name is appropriate
   - All pages combined in correct order
   - Result appears in first selected section's category
-  - Selection clears after merge
-  - Page count updates correctly
+  - {CHECK_SELECTION_CLEARS} merge
+  - {CHECK_PAGE_COUNT_UPDATES} correctly
 
 ### Move Multiple Selected Sections
 - Select multiple sections
@@ -316,8 +327,8 @@ Test batch operations and multi-select functionality in the document list.
 - CHECK:
   - All selected sections move to target
   - Sections maintain relative order
-  - Page counts update for all affected categories
-  - Selection clears after move
+  - {CHECK_PAGE_COUNT_UPDATES} for all affected categories
+  - {CHECK_SELECTION_CLEARS} move
   - Works with sections from different source categories
 
 ### Delete Multiple Selected Sections
@@ -326,9 +337,9 @@ Test batch operations and multi-select functionality in the document list.
 - CHECK:
   - Confirmation dialog shows count
   - All sections delete on confirm
-  - Page counts update
+  - {CHECK_PAGE_COUNT_UPDATES}
   - Cannot delete if it would leave category empty (test edge case)
-  - Selection clears after deletion
+  - {CHECK_SELECTION_CLEARS} deletion
         """,
     ),
     create_qa_test(
@@ -340,10 +351,7 @@ Test export functionality in the document list including PDF export and table of
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
-## Test Setup Requirements
-- Log in to the app.
-- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
-- Click "Launch Sky" button
+{DOCLIST_TEST_SETUP}
 
 ---
 
@@ -403,10 +411,7 @@ Test filter and search functionality in the document list.
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
-## Test Setup Requirements
-- Log in to the app.
-- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
-- Click "Launch Sky" button
+{DOCLIST_TEST_SETUP}
 
 ---
 
@@ -455,10 +460,7 @@ Test duplicate detection functionality in the document list.
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
-## Test Setup Requirements
-- Log in to the app.
-- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
-- Click "Launch Sky" button
+{DOCLIST_TEST_SETUP}
 
 ---
 
@@ -494,10 +496,7 @@ Test expand and collapse functionality in the document list.
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 
-## Test Setup Requirements
-- Log in to the app.
-- Find the case with name: "QA Test DocList - DO NOT DELETE" and open it
-- Click "Launch Sky" button
+{DOCLIST_TEST_SETUP}
 
 ---
 
@@ -520,6 +519,227 @@ Test expand and collapse functionality in the document list.
   - Lazy loading behavior
   - Thumbnail quality
   - Page numbers display correctly
+        """,
+    ),
+    create_qa_test(
+        test_name="test-chat",
+        user_prompt=f"""
+## Objective
+Test chat functionality including sending messages, receiving AI responses, term highlighting, clearing, copying, exporting, and case-based context.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+{DOCLIST_TEST_SETUP}
+
+---
+
+## Chat Testing
+
+### Open Chat Tab
+- Click the Chat tab in the right panel
+- CHECK:
+  - Chat interface loads without delay
+  - Input field is active
+  - Previous messages (if any) are displayed in correct order
+  - Placeholder is visible when chat is empty
+
+### Send Message
+- Type a message and press Enter
+- CHECK:
+  - User message appears instantly
+  - "Thinking…" or loading indicator appears
+
+### Receive AI Response
+- Wait for AI to generate a reply
+- CHECK:
+  - Response renders fully
+  - Formatting (bold, lists, headings) is correct
+  - Content is relevant to the query
+
+### Term Highlighting
+- Hover over underlined terms in AI response
+- CHECK:
+  - Tooltip opens with definition
+  - Tooltip closes correctly
+  - No UI freeze when switching terms
+
+### Clear
+- Click Clear button
+- CHECK:
+  - All chat messages are cleared
+  - Chat resets to default empty state ("Ask SKY anything")
+  - Suggested prompts reappear
+  - Input remains active
+
+### Copy
+- Click Copy button
+- CHECK:
+  - Entire chat content is copied
+  - Button state changes to "Copied"
+
+### Export Chat
+- Click Export and choose DOCX, PDF, Plain Text, or Email
+- CHECK:
+  - Export starts without error
+  - Downloaded file contains complete chat
+  - Formatting is preserved
+
+### Case-Based Context
+- Open Chat on Case A → send message
+- Switch to Case B
+- CHECK:
+  - Case B has separate history
+  - No cross-case contamination
+- Return to Case A
+- CHECK history remains intact
+
+### Sources Modal
+- In an AI response that shows Sources: 1 2 3…, click on any source number
+{MODAL_DUAL_PANE_CHECKS}
+        """,
+    ),
+    create_qa_test(
+        test_name="test-pdf-viewer",
+        user_prompt=f"""
+## Objective
+Test PDF viewer functionality including page selection, zoom, OCR text view, rotation, deletion, and toolbar features.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+{DOCLIST_TEST_SETUP}
+
+---
+
+## PDF Viewer Testing
+
+### Page Selection
+- Click on any page thumbnail in the left panel
+- CHECK:
+  - The selected page opens in the main doc viewer area
+  - Active page is highlighted in the left panel
+  - Page number in the top navigation updates accordingly
+- Click multiple pages with different content types (text, tables, images)
+- CHECK:
+  - Each page loads without delays
+  - No rendering artifacts or distortion
+  - Navigation stays synchronized with the current page
+- After selecting a page, check bottom toolbar availability
+- CHECK bottom bar shows correct actions (Zoom, Text, Rotate, Delete when applicable)
+
+### Zoom Page
+- Select a page
+- Click Zoom
+- CHECK:
+  - A magnifier tool appears
+  - Moving the cursor zooms the underlying content
+  - Zoomed view is clear and high-resolution
+  - Toggling Zoom off returns the page to normal view
+- Test zooming on text, images, small fonts
+- CHECK all details remain readable without pixelation
+
+### Text (OCR View)
+- Select a page
+- Click Text
+{MODAL_DUAL_PANE_CHECKS}
+- Additional CHECK: Text matches PDF content (accuracy check)
+
+### Rotate Page
+- Select a page
+- Click Rotate in the bottom toolbar
+- CHECK:
+  - Page rotates immediately
+  - Rotation is visually correct and smooth
+  - Left panel thumbnail updates accordingly
+  - {CHECK_PERSISTENCE}
+
+### Delete Page
+- Select a page
+- Click Delete in the bottom toolbar
+- Confirm deletion in confirmation dialog
+- CHECK:
+  - Page is removed
+  - Navigation numbers update
+  - Next valid page opens
+  - {CHECK_PERSISTENCE}
+
+### Viewer Sync With Doc List
+- Select a section in the doc list that contains multiple pages
+- Click a page within that section
+- CHECK:
+  - Viewer scrolls to the correct page
+  - Left panel and doc list remain synchronized
+  - Selecting the next/previous page updates selection in doc list
+
+### Bottom Toolbar Visibility
+- Select a page
+- CHECK:
+  - Bottom toolbar appears
+  - Buttons match available actions: Zoom, Text, Rotate, Delete
+- Click outside the page
+- CHECK toolbar hides when no page is actively selected
+        """,
+    ),
+    create_qa_test(
+        test_name="test-version-management",
+        user_prompt=f"""
+## Objective
+Test version management functionality including creating, renaming, deleting, and switching between versions.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+{DOCLIST_TEST_SETUP}
+
+---
+
+## Version Management Testing
+
+### Open Version List
+- Open the versions dropdown at the top of the case
+- CHECK:
+  - Active version (Master or other) is highlighted
+  - All existing versions appear in the list
+  - No missing or duplicate entries
+
+### Clone Version
+- Click the ⋯ button next to the version select
+- Select Create Version
+- Enter a new version name
+- CHECK:
+  - New version is created successfully
+  - The cloned version contains the same documents, sections, and page structure as the original
+  - New version appears in the versions dropdown
+  - Switching to the cloned version loads identical content
+
+### Rename Version
+- Click ⋯ next to the version dropdown
+- Select Rename
+- Enter a new version name and confirm
+- CHECK:
+  - Version name updates immediately in the dropdown
+  - {CHECK_PERSISTENCE}
+  - No breaking of version ordering or selection
+
+### Delete Version
+- Click ⋯ next to the version dropdown
+- Select Delete
+- Confirm deletion
+- CHECK:
+  - Version disappears from the versions dropdown
+  - Other versions remain unchanged
+  - Interface switches to the next available version
+  - Deleted version's content is no longer accessible
+
+### Switch Between Versions
+- Open the versions dropdown
+- Select another version
+- CHECK:
+  - All content updates immediately (documents, sections, pages)
+  - Sidebar categories match the selected version
+  - Viewer displays content of the selected version
+  - No content leakage between versions
         """,
     ),
 ]
