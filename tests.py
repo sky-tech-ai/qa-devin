@@ -10,6 +10,7 @@ QA_PREAMBLE = f"""\
 Your job is to do QA testing on the {{url}} website.
 Please follow the instructions below and make sure every line which starts with "CHECK" is working as expected.
 If it is not then you should abort and send message to the user saying what went wrong. No need to send a message if it is working as expected.
+After you finish each section (and each Part, if there are several), send a one-line progress message, e.g. "Progress: finished Rename Section, 4/4 CHECKs passed". Don't wait for a reply.
 After you are done, send a message with all the CHECKs you did and what the results were. You MUST use Devin's structured output feature (not a file) to send a JSON object with 'success' (boolean) and 'message' (string). The message should include whether each CHECK you ran passed or failed (and a reason if it failed).
 """
 

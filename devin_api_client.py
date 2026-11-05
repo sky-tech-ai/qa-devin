@@ -28,11 +28,13 @@ class DevinAPISessionStatusResponse(TypedDict):
     snapshot_id: Optional[str]
     playbook_id: Optional[str]
     structured_output: dict
+    messages: list[dict]
     status_enum: (
         Literal[
             "working",
             "blocked",
             "finished",
+            "expired",
             "suspend_requested",
             "resume_requested",
             "resumed",

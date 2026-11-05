@@ -36,6 +36,40 @@ class QATestResult(TypedDict):
 
 
 MAX_TIME_PER_TEST = 60 * 60  # 60 minutes (combined tests run two parts on one case)
+PROGRESS_INTERVAL = int(os.getenv("QA_PROGRESS_MINUTES", "10")) * 60
+# Devin statuses after which the session won't do more work on its own.
+DONE_STATUSES = {"blocked", "stopped", "finished", "expired"}
+
+# Latest state per test, written by poll_session_and_eval, read by log_progress.
+progress: dict[str, dict] = {}
+
+
+def last_devin_message(status: dict) -> str:
+    """Latest message Devin wrote in the session (skips the user's messages)."""
+    for m in reversed(status.get("messages") or []):
+        if "user" not in (m.get("type") or "") and m.get("message"):
+            return " ".join(m["message"].split())
+    return ""
+
+
+async def log_progress(session_links: list[tuple[str, str, str]]) -> None:
+    """Every PROGRESS_INTERVAL, log each session's status and Devin's latest message."""
+    start = time.time()
+    while True:
+        await asyncio.sleep(PROGRESS_INTERVAL)
+        lines = [f"=== QA progress after {int((time.time() - start) / 60)} min ==="]
+        for _, session_url, test_name in session_links:
+            p = progress.get(test_name, {})
+            if "success" in p:
+                state = "PASSED" if p["success"] else "FAILED"
+            else:
+                state = p.get("status") or "starting"
+            line = f"[{state}] {test_name} ({session_url})"
+            if p.get("last_message") and "success" not in p:
+                msg = p["last_message"]
+                line += f"\n    Devin: {msg[:300]}{'...' if len(msg) > 300 else ''}"
+            lines.append(line)
+        print("\n".join(lines), flush=True)
 
 # Per-environment names of the Devin secrets (app.devin.ai/secrets) holding the
 # HTTP basic auth (username:password), the External API key and the app login.
@@ -64,10 +98,15 @@ async def poll_session_and_eval(
         status: DevinAPISessionStatusResponse | None = (
             await devin_api_client.get_session_status(session_id)
         )
+        if status:
+            progress[test_name] = {
+                "status": status["status_enum"] or "starting",
+                "last_message": last_devin_message(status),
+            }
         if (
             status
             and status["status_enum"] is not None
-            and status["status_enum"].lower() in ["blocked", "stopped"]
+            and status["status_enum"].lower() in DONE_STATUSES
         ):
             break
 
@@ -97,7 +136,8 @@ async def poll_session_and_eval(
         "success": success,
         "message": message,
     }
-    print(f"Test finished: {x}")
+    print(f"Test finished: {x}", flush=True)
+    progress.setdefault(test_name, {})["success"] = success
     return x
 
 
@@ -193,8 +233,10 @@ async def run_tests_and_send_to_slack(
             channel=SLACK_TEST_RESULTS_CHANNEL_ID, text=links_message
         )
 
+    progress_task = asyncio.create_task(log_progress(session_links))
     # Use return_exceptions=True to prevent exceptions from stopping other tasks
     results = await asyncio.gather(*eval_tasks, return_exceptions=True)
+    progress_task.cancel()
 
     # Filter out exceptions and convert them to error results
     processed_results: list[QATestResult] = []
