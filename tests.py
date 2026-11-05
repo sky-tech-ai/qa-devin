@@ -14,7 +14,7 @@ After you are done, send a message with all the CHECKs you did and what the resu
 """
 
 DEVIN_QA_LOGIN_INSTRUCTIONS = """\
-For basic HTTP authentication, use "{basic_auth}". Log in using the email ({user_email_secret}) and password ({user_password_secret}) from your secrets.
+For basic HTTP authentication, use the username:password from the {basic_auth_secret} secret. Log in using the email ({user_email_secret}) and password ({user_password_secret}) from your secrets.
 """
 
 DOCLIST_TEST_SETUP = f"""\

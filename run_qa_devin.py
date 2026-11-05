@@ -37,17 +37,17 @@ class QATestResult(TypedDict):
 
 MAX_TIME_PER_TEST = 30 * 60  # 30 minutes
 
-# Per-environment settings: HTTP basic auth for the site and the names of the
-# Devin secrets (app.devin.ai/secrets) holding the API key and login.
+# Per-environment names of the Devin secrets (app.devin.ai/secrets) holding the
+# HTTP basic auth (username:password), the External API key and the app login.
 ENVIRONMENTS = {
     "dev": {
-        "basic_auth": "gloria:wisedocssuck",
+        "basic_auth_secret": "DEV_BASIC_AUTH",
         "api_key_secret": "SKY_API_KEY_DEV",
         "user_email_secret": "DEV_USER_EMAIL",
         "user_password_secret": "DEV_USER_PASSWORD",
     },
     "staging": {
-        "basic_auth": "gloria:qwerty",
+        "basic_auth_secret": "STAGING_BASIC_AUTH",
         "api_key_secret": "SKY_API_KEY_STAGING",
         "user_email_secret": "STAGING_USER_EMAIL",
         "user_password_secret": "STAGING_USER_PASSWORD",
