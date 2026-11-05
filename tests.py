@@ -427,6 +427,47 @@ Exports are generated on the server and **delivered by email**; nothing download
         """,
     ),
     create_qa_test(
+        test_name="test-doclist-export-error",
+        user_prompt=f"""
+## Objective
+Test that a failed doc list export shows an error and keeps export mode and the selection so the user can retry.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+{DOCLIST_TEST_SETUP}
+
+---
+
+## Simulating a Failed Export
+The export request has to fail on purpose. Use Playwright in a scratch directory (`npm i playwright`) and attach to the already-open Chrome over CDP (`chromium.connectOverCDP("http://localhost:29229")`), so you keep the logged-in session. Find the page with the case open and add a route that aborts the export requests:
+`page.route(/\\/doclist\\/export(-docx)?\\/async/, route => route.abort())`
+Keep that script running while you do the failing exports below, and keep interacting with the app through the browser as usual.
+
+### Failed PDF Export
+- Click the "Export" button in the doc list actions to enter export mode
+- Select two sections from different categories; CHECK "Selected: 2" is shown
+- With the route active, click "Export" (full doc list as PDF)
+- CHECK:
+  - A red error toast appears saying "Export failed. Please try again."
+  - No "Exporting Your Document" / "Check your email" dialog appears
+  - The doc list stays in export mode: checkboxes, "Cancel" and the "Export" button are still shown
+  - The same two sections are still checked and "Selected: 2" is still shown
+  - The "Export" button is enabled again (no spinner, no check mark)
+
+### Failed DOCX Export
+- Still in export mode with the same selection, choose "Export Full Doc List as DOCX" from the ▾ menu
+- CHECK the same error toast appears, no dialog appears, and export mode and "Selected: 2" are kept
+
+### Retry After the Failure
+- Remove the route (`page.unroute(...)`, or stop the script) so requests go through again
+- Without changing the selection, click "Export"
+- CHECK:
+  - An "Exporting Your Document" dialog appears saying "Check your email", with a file name starting with "Doclist:" and ending in ".pdf"
+  - Export mode exits after the dialog appears
+        """,
+    ),
+    create_qa_test(
         test_name="test-doclist-search",
         user_prompt=f"""
 ## Objective
