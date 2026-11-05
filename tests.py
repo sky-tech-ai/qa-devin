@@ -143,8 +143,11 @@ Test all section operations in the document list including rename, move, split, 
   - CHECK sections combine with pages in correct order
 - Test merge via merge button between sections:
   - Hover between two adjacent sections
-  - Click the merge line/button that appears
-  - CHECK immediate merge with optimistic UI update
+  - Click the merge (+) button that appears
+  - CHECK a Merge dialog opens, pre-filled with the two sections
+  - Cancel once: CHECK nothing is merged
+  - Open it again and confirm
+  - CHECK sections merge and the UI updates immediately after confirming (optimistic update)
 - CHECK merged section name (should use first section's name)
 - {CHECK_PAGE_COUNT_UPDATES} correctly
 - Test merging sections from different categories (should move first)
