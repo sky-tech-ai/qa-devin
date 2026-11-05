@@ -60,6 +60,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           TESTS: ${{ inputs.tests }}
+          PYTHONUNBUFFERED: "1" # show progress in the live log, not at the end
         run: |
           args=(--environment "${{ inputs.environment }}" --url "${{ inputs.url }}"
             --external-api-specs-url "${{ inputs.external_api_specs_url }}"
