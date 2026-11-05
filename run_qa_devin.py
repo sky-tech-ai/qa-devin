@@ -37,6 +37,23 @@ class QATestResult(TypedDict):
 
 MAX_TIME_PER_TEST = 30 * 60  # 30 minutes
 
+# Per-environment names of the Devin secrets (app.devin.ai/secrets) holding the
+# HTTP basic auth (username:password), the External API key and the app login.
+ENVIRONMENTS = {
+    "dev": {
+        "basic_auth_secret": "DEV_BASIC_AUTH",
+        "api_key_secret": "SKY_API_KEY_DEV",
+        "user_email_secret": "DEV_USER_EMAIL",
+        "user_password_secret": "DEV_USER_PASSWORD",
+    },
+    "staging": {
+        "basic_auth_secret": "STAGING_BASIC_AUTH",
+        "api_key_secret": "SKY_API_KEY_STAGING",
+        "user_email_secret": "STAGING_USER_EMAIL",
+        "user_password_secret": "STAGING_USER_PASSWORD",
+    },
+}
+
 
 async def poll_session_and_eval(
     test_name: str, session_id: str, session_url: str
@@ -129,7 +146,8 @@ async def run_tests_and_send_to_slack(
     external_api_specs_url: str,
     sample_pdf_url: str,
     johndoejunior_zip_url: str,
-):
+    environment: str = "dev",
+) -> list[QATestResult]:
     eval_tasks = []
     session_links: list[tuple[str, str, str]] = []
     for test in QA_TESTS:
@@ -140,6 +158,7 @@ async def run_tests_and_send_to_slack(
             external_api_specs_url=external_api_specs_url,
             sample_pdf_url=sample_pdf_url,
             johndoejunior_zip_url=johndoejunior_zip_url,
+            **ENVIRONMENTS[environment],
         )
         session_response = await devin_api_client.start_session(prompt)
         assert session_response["session_id"] is not None
@@ -192,6 +211,7 @@ async def run_tests_and_send_to_slack(
             raise ValueError(f"Unknown result type: {type(result)}")
 
     await send_final_results_to_slack(processed_results)
+    return processed_results
 
 
 async def main():
@@ -203,13 +223,13 @@ async def main():
         "--url",
         type=str,
         help="Base URL for testing",
-        default="https://dev.app.usesky.ai/",
+        default="https://dev.app.sky-tech.ai/",
     )
     parser.add_argument(
         "--external-api-specs-url",
         type=str,
         help="URL for external API specs",
-        default="https://dev-api.app.usesky.ai/external-api/docs-json",
+        default="https://dev-api.app.sky-tech.ai/external-api/docs-json",
     )
     parser.add_argument(
         "--sample-pdf-url",
@@ -221,18 +241,31 @@ async def main():
         "--johndoejunior-zip-url",
         type=str,
         help="URL for John Doe Junior zip archive",
-        default="https://dev-assets.app.usesky.ai/previews/John_Doe_Junior.zip",
+        default="https://dev-assets.app.sky-tech.ai/previews/John_Doe_Junior.zip",
+    )
+    parser.add_argument(
+        "--environment",
+        choices=sorted(ENVIRONMENTS),
+        default="dev",
+        help="Which basic auth and Devin secrets (API key, login) to use",
     )
     args = parser.parse_args()
 
     test_names = args.tests.split(",") if args.tests else None
-    await run_tests_and_send_to_slack(
+    results = await run_tests_and_send_to_slack(
         url=args.url,
         test_names=test_names,
         external_api_specs_url=args.external_api_specs_url,
         sample_pdf_url=args.sample_pdf_url,
         johndoejunior_zip_url=args.johndoejunior_zip_url,
+        environment=args.environment,
     )
+    if not results:
+        sys.exit("No tests ran")
+    failed = [r["test_name"] for r in results if not r["success"]]
+    if failed:
+        sys.exit(f"{len(failed)}/{len(results)} QA tests failed: {', '.join(failed)}")
+    print(f"All {len(results)} QA tests passed")
 
 
 if __name__ == "__main__":

@@ -8,15 +8,23 @@ on:
         required: false
         default: ''
         type: string
+      environment:
+        description: 'Environment (selects basic auth and Devin secrets)'
+        required: false
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
       url:
         description: 'Base URL for testing'
         required: false
-        default: 'https://dev.app.usesky.ai/'
+        default: 'https://dev.app.sky-tech.ai/'
         type: string
       external_api_specs_url:
         description: 'URL for external API specs'
         required: false
-        default: 'https://dev-api.app.usesky.ai/external-api/docs-json'
+        default: 'https://dev-api.app.sky-tech.ai/external-api/docs-json'
         type: string
       sample_pdf_url:
         description: 'URL for sample PDF document'
@@ -26,7 +34,7 @@ on:
       johndoejunior_zip_url:
         description: 'URL for John Doe Junior zip archive'
         required: false
-        default: 'https://dev-assets.app.usesky.ai/previews/John_Doe_Junior.zip'
+        default: 'https://dev-assets.app.sky-tech.ai/previews/John_Doe_Junior.zip'
         type: string
 
 jobs:
@@ -51,19 +59,11 @@ jobs:
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          TESTS: ${{ inputs.tests }}
         run: |
-          if [ -n "${{ inputs.tests }}" ]; then
-            python3 run_qa_devin.py --tests "${{ inputs.tests }}" --url "${{ inputs.url }}" --external-api-specs-url "${{ inputs.external_api_specs_url }}" --sample-pdf-url "${{ inputs.sample_pdf_url }}" --johndoejunior-zip-url "${{ inputs.johndoejunior_zip_url }}"
-          else
-            python3 run_qa_devin.py --url "${{ inputs.url }}" --external-api-specs-url "${{ inputs.external_api_specs_url }}" --sample-pdf-url "${{ inputs.sample_pdf_url }}" --johndoejunior-zip-url "${{ inputs.johndoejunior_zip_url }}"
-          fi
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: qa-test-results
-          path: |
-            *.log
-            *.json
-          if-no-files-found: ignore
+          args=(--environment "${{ inputs.environment }}" --url "${{ inputs.url }}"
+            --external-api-specs-url "${{ inputs.external_api_specs_url }}"
+            --sample-pdf-url "${{ inputs.sample_pdf_url }}"
+            --johndoejunior-zip-url "${{ inputs.johndoejunior_zip_url }}")
+          if [ -n "$TESTS" ]; then args+=(--tests "$TESTS"); fi
+          python3 run_qa_devin.py "${args[@]}"
