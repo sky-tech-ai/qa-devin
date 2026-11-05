@@ -7,7 +7,7 @@ from typing import TypedDict
 
 from dotenv import load_dotenv
 from slack_sdk import WebClient
-from tests import QA_TESTS
+from tests import ALL_TESTS, QA_TESTS
 
 from devin_api_client import DevinAPIClient, DevinAPISessionStatusResponse
 
@@ -35,7 +35,7 @@ class QATestResult(TypedDict):
     message: str
 
 
-MAX_TIME_PER_TEST = 30 * 60  # 30 minutes
+MAX_TIME_PER_TEST = 60 * 60  # 60 minutes (combined tests run two parts on one case)
 
 # Per-environment names of the Devin secrets (app.devin.ai/secrets) holding the
 # HTTP basic auth (username:password), the External API key and the app login.
@@ -150,9 +150,14 @@ async def run_tests_and_send_to_slack(
 ) -> list[QATestResult]:
     eval_tasks = []
     session_links: list[tuple[str, str, str]] = []
-    for test in QA_TESTS:
-        if test_names and test["test_name"] not in test_names:
-            continue
+    if test_names:
+        unknown = [n for n in test_names if n not in ALL_TESTS]
+        if unknown:
+            raise ValueError(f"Unknown tests: {unknown}. Known: {sorted(ALL_TESTS)}")
+        selected = [ALL_TESTS[n] for n in test_names]
+    else:
+        selected = QA_TESTS
+    for test in selected:
         prompt = test["user_prompt"].format(
             url=url,
             external_api_specs_url=external_api_specs_url,

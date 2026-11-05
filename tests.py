@@ -56,7 +56,9 @@ def create_qa_test(test_name: str, user_prompt: str) -> QATest:
     }
 
 
-QA_TESTS: list[QATest] = [
+# Individual tests. Selectable by name with --tests, but by default they run
+# combined (see QA_TESTS at the bottom) so fewer cases are created in parallel.
+SINGLE_TESTS: list[QATest] = [
     create_qa_test(
         test_name="test-external-api",
         user_prompt=f"""
@@ -750,3 +752,60 @@ Test version management functionality including creating, renaming, deleting, an
         """,
     ),
 ]
+
+
+def combine_qa_tests(test_name: str, part_names: list[str]) -> QATest:
+    """Run several doclist tests in one Devin session on one case.
+
+    Each test creates its own case and uploads the whole John Doe set, and too
+    many of those in parallel leave cases stuck in DRAFT. Combining them means
+    one case (one setup) per session; the parts then run one after another.
+    Order parts read-only first, so a later part's edits can't break an earlier one.
+    """
+    by_name = {t["test_name"]: t for t in SINGLE_TESTS}
+    objectives, bodies = [], []
+    for i, name in enumerate(part_names, 1):
+        prompt = by_name[name]["user_prompt"]
+        assert prompt.startswith(QA_PREAMBLE) and prompt.count(DOCLIST_TEST_SETUP) == 1, name
+        head, body = prompt[len(QA_PREAMBLE):].split(DOCLIST_TEST_SETUP)
+        objective = head.split("## Objective", 1)[1].split("## Login Instructions", 1)[0].strip()
+        objectives.append(f"{i}. **{name}**: {objective}")
+        body = body.strip()
+        body = body[3:].strip() if body.startswith("---") else body
+        bodies.append(f"---\n\n# Part {i}: {name}\n\n{body}")
+
+    nl = "\n"
+    combined = f"""
+## Objective
+This session runs {len(part_names)} test parts on ONE case, in this order:
+{nl.join(objectives)}
+
+Do the test setup once, then run the parts one after another on the same case.
+This overrides the "abort" rule above: if a CHECK fails, record it and continue with
+the next step and the next part. Only abort if the setup fails or the app is unusable.
+In the structured output, 'success' is true only if every CHECK in every part passed,
+and the message must list the CHECKs grouped by part.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+{DOCLIST_TEST_SETUP}
+
+{(nl + nl).join(bodies)}
+"""
+    return create_qa_test(test_name, combined)
+
+
+# What runs by default: 7 sessions, 6 of them creating a John Doe case (was 11).
+QA_TESTS: list[QATest] = [
+    next(t for t in SINGLE_TESTS if t["test_name"] == "test-external-api"),
+    combine_qa_tests("test-doclist-expand-and-sections", ["test-doclist-expand-collapse", "test-doclist-section-ops"]),
+    combine_qa_tests("test-doclist-duplicates-and-categories", ["test-doclist-duplicates", "test-doclist-category-ops"]),
+    combine_qa_tests("test-doclist-search-and-drag-drop", ["test-doclist-search", "test-doclist-drag-drop"]),
+    combine_qa_tests("test-pdf-viewer-and-export", ["test-pdf-viewer", "test-doclist-export"]),
+    combine_qa_tests("test-chat-and-versions", ["test-chat", "test-version-management"]),
+    next(t for t in SINGLE_TESTS if t["test_name"] == "test-doclist-batch-ops"),
+]
+
+# Every test that --tests can select by name.
+ALL_TESTS: dict[str, QATest] = {t["test_name"]: t for t in SINGLE_TESTS + QA_TESTS}
