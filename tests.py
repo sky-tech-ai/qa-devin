@@ -473,6 +473,44 @@ The "Filter" input at the top of the doc list filters sections by **section name
         """,
     ),
     create_qa_test(
+        test_name="test-doclist-no-section-drag-while-filtered",
+        user_prompt=f"""
+## Objective
+Check that sections can't be dragged while the document list filter has text (filtered results are
+ordered by match quality, not saved order), and that dragging works again once the filter is cleared.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+{DOCLIST_TEST_SETUP}
+
+---
+
+## Section Drag While Filtered
+
+### Baseline (no filter)
+- Make sure the filter input at the top of the doc list is empty and all sections are collapsed.
+- Note the order of the sections in a category that has at least 3 sections.
+- CHECK the grip handle (vertical lines icon) is shown on collapsed section rows.
+
+### Filter active
+- Type a term in the filter that matches at least 2 sections (e.g. part of a section name that occurs more than once).
+- CHECK only matching sections are shown.
+- CHECK no grip handle is shown on any visible section row.
+- Try to drag a visible section (press and drag on the row, and on where the grip normally is) below another visible section.
+- CHECK the section doesn't move and no drop zone indicator appears.
+- Refresh the page and clear the filter.
+- CHECK the section order is the same as the order noted in the baseline (nothing was saved).
+
+### Filter cleared
+- Type a term in the filter again, then clear it completely.
+- CHECK all sections are shown again and the grip handles are back on collapsed section rows.
+- Drag a section one position down within its category.
+- CHECK the section moves to the dropped position.
+- {CHECK_ORDER_PERSISTS}
+        """,
+    ),
+    create_qa_test(
         test_name="test-doclist-duplicates",
         user_prompt=f"""
 ## Objective
