@@ -14,7 +14,7 @@ After you are done, send a message with all the CHECKs you did and what the resu
 """
 
 DEVIN_QA_LOGIN_INSTRUCTIONS = """\
-For basic HTTP authentication, use "gloria:wisedocssuck". Log in using the email (DEV_USER_EMAIL) and password (DEV_USER_PASSWORD) from your secrets.
+For basic HTTP authentication, use "{basic_auth}". Log in using the email ({user_email_secret}) and password ({user_password_secret}) from your secrets.
 """
 
 DOCLIST_TEST_SETUP = f"""\
@@ -22,7 +22,7 @@ DOCLIST_TEST_SETUP = f"""\
 - Log in to the app.
 - Create a new case.
 - Download the zip archive from {{johndoejunior_zip_url}}, extract it
-- Take the bearer token from SKY_API_KEY_DEV secret and use it to authenticate with the External API: {{external_api_specs_url}}.
+- Take the bearer token from {{api_key_secret}} secret and use it to authenticate with the External API: {{external_api_specs_url}}.
 - Create a new case using the External API: {{external_api_specs_url}}.
 - Upload files to the case using the External API: {{external_api_specs_url}}.
 - Keep making requests to chat-status for this case in 30 second intervals and CHECK: the chat status is "COMPLETE". Timeout is 15 minutes.
@@ -61,7 +61,7 @@ QA_TESTS: list[QATest] = [
         test_name="test-external-api",
         user_prompt=f"""
 You should test Sky External API: {{external_api_specs_url}}
-Take the bearer token from SKY_API_KEY_DEV secret and use it to authenticate with the API.
+Take the bearer token from {{api_key_secret}} secret and use it to authenticate with the API.
 You need to:
 - Create a new case. dateOfLoss и dateOfBirth should be in ISO format.
 - CHECK: You see the case in the list.
