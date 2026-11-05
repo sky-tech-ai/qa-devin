@@ -251,59 +251,50 @@ Test all drag and drop functionality in the document list including reordering c
 ---
 
 ## Drag & Drop Testing
+Rules in the current app: categories and sections can only be dragged while they are **collapsed** (the grip handle appears on hover), and sections can only be dropped into an **expanded** category. Dragging is off in export mode and multi-select mode.
 
 ### Reorder Categories
-- Drag category by the grip handle (vertical lines icon)
+- Collapse a category, hover it, and drag it by the grip handle (vertical lines icon)
+- CHECK an expanded category shows no grip handle and can't be dragged
 - Test:
-  - Move category up in list
-  - Move category down in list
-  - Move to first position
-  - Move to last position
-  - Drop on invalid area (should snap back)
+  - Move a category up, down, to the first and to the last position
+  - Drop on an invalid area: CHECK it snaps back
   - CHECK visual feedback during drag
   - {CHECK_ORDER_PERSISTS}
 
 ### Reorder Sections Within Category
-- Drag section within same category
+- With the category expanded and the section collapsed, drag a section within the category
+- CHECK an expanded section (pages showing) can't be dragged
 - Test:
-  - Move section up
-  - Move section down
-  - Drop between other sections
-  - CHECK drop zone indicators appear
+  - Move a section up and down, and drop it between other sections
+  - CHECK a gap opens where the section will land
   - CHECK section order updates immediately
   - {CHECK_ORDER_PERSISTS}
 
 ### Move Sections Between Categories
-- Drag section from one category to another
-- Test:
-  - Drop into different category
-  - Drop into empty category (CHECK empty drop zone works)
-  - Drop into collapsed category (should auto-expand)
-  - CHECK section appears in new category
-  - {CHECK_PAGE_COUNT_UPDATES} for both categories
-  - CHECK section maintains its pages/data
-  - Test with multiple rapid moves (stress test)
+- Expand the target category, then drag a collapsed section into it
+- CHECK:
+  - The section appears in the new category with its pages and page-count badge unchanged
+  - Moving out the last section of a category removes that (now empty) category
+- Create a new category with "Add category", then drag a section into its dashed drop zone ("Category created, drag sections or pages here to activate it."): CHECK the category becomes a normal category with that section
+- Do several moves quickly: CHECK the final state is correct
+- {CHECK_ORDER_PERSISTS}
 
 ### Reorder Pages Within Section
 - Expand a section to show page thumbnails
 - Drag individual pages to reorder
 - Test:
-  - Reorder pages within section
-  - Move first page to last position
-  - Move last page to first position
-  - Rapid reordering (multiple quick moves)
+  - Reorder pages within the section
+  - Move the first page to the last position, and the last page to the first
+  - CHECK a blue line shows where the page will land
   - CHECK page numbers update correctly
-  - CHECK thumbnails display in correct order
+  - CHECK thumbnails display in the correct order
   - {CHECK_ORDER_PERSISTS}
 
 ### Drag & Drop Edge Cases
-- Test with slow internet (enable throttling)
-- Test dragging while API call is in-flight
-- Test dragging immediately after another drag
-- Test drag + page refresh during drag
-- Test with very large sections (50+ pages)
-- CHECK error handling for failed drag operations
-- Test drag on touch devices (mobile)
+- Test with slow internet (enable throttling): CHECK the order updates immediately and is still correct once the request finishes
+- Drag immediately after another drag: CHECK both moves apply
+- If a page move fails, CHECK it reverts and the toast "Failed to move the page. Please try again." appears (you may not be able to force a failure; skip if so)
         """,
     ),
     create_qa_test(
@@ -320,52 +311,47 @@ Test batch operations and multi-select functionality in the document list.
 ---
 
 ## Batch Operations & Multi-Select Testing
+Batch selection uses **Shift+click and Cmd/Ctrl+click on section rows** (outside export mode). The checkboxes only appear in export mode and are not used for batch actions.
 
 ### Multi-Select Sections
 - Test selection methods:
-  - Click section checkbox to select individual section
-  - Shift+click to select range of sections
-  - Ctrl/Cmd+click to select non-contiguous sections
-  - Click "Select All" checkbox to select all sections
-  - Click category checkbox to select all sections in category
+  - Cmd/Ctrl+click section rows to select non-contiguous sections
+  - Shift+click to select a range of sections
 - CHECK:
-  - Selected sections have visual indicator
-  - Selection count appears in UI
-  - Batch action buttons become enabled
-  - Can deselect individual sections
-  - Can clear all selections
+  - Selected sections have a highlighted (blue) background
+  - Once 2 or more sections are selected, a toolbar appears showing "N selected" with Move, AI Rename, Merge, Summarize and Delete
+  - Cmd/Ctrl+click a selected section to deselect it
+  - The toolbar's close (X) button clears the selection
 
 ### Merge Multiple Selected Sections
 - Select 2+ sections (same or different categories)
-- Click "Merge Selected" button
+- Click "Merge" in the selection toolbar
 - CHECK:
-  - Confirmation dialog shows section count
-  - Merged section name is appropriate
-  - All pages combined in correct order
-  - Result appears in first selected section's category
+  - The merge starts immediately (there is no confirmation dialog) and a "Merging Sections" / "Please wait..." dialog is shown
+  - The result keeps the name and category of the first selected section in list order
+  - All pages are combined in the correct order
   - {CHECK_SELECTION_CLEARS} merge
   - {CHECK_PAGE_COUNT_UPDATES} correctly
 
 ### Move Multiple Selected Sections
-- Select multiple sections
-- Click "Move Selected" button
-- Choose target category from dropdown
+- Select multiple sections, including from different categories
+- Click "Move" in the selection toolbar
+- CHECK a "Move To..." dialog opens with a searchable category picker
+- Pick a target category and confirm
 - CHECK:
-  - All selected sections move to target
-  - Sections maintain relative order
-  - {CHECK_PAGE_COUNT_UPDATES} for all affected categories
+  - All selected sections move to the target category
+  - {CHECK_PAGE_COUNT_UPDATES} for all affected sections
   - {CHECK_SELECTION_CLEARS} move
-  - Works with sections from different source categories
 
 ### Delete Multiple Selected Sections
 - Select multiple sections
-- Click "Delete Selected" button
+- Click "Delete" in the selection toolbar
 - CHECK:
-  - Confirmation dialog shows count
-  - All sections delete on confirm
-  - {CHECK_PAGE_COUNT_UPDATES}
-  - Cannot delete if it would leave category empty (test edge case)
+  - A "Delete Sections" confirmation dialog lists the selected section names
+  - Cancel keeps all sections
+  - On confirm, all selected sections are deleted
   - {CHECK_SELECTION_CLEARS} deletion
+- Deleting every section of a category is allowed
         """,
     ),
     create_qa_test(
@@ -382,50 +368,42 @@ Test export functionality in the document list including PDF export and table of
 ---
 
 ## Export Functionality Testing
+Exports are generated on the server and **delivered by email**; nothing downloads in the browser, so don't check file contents.
 
 ### Enter Export Mode
-- Click export button in doc list actions
+- Click the "Export" button in the doc list actions
 - CHECK:
-  - UI switches to export mode
-  - Checkboxes appear for selection
-  - Export options panel appears
-  - Other actions are disabled/hidden in export mode
-  - Can exit export mode
+  - Checkboxes appear for categories and sections, plus a select-all checkbox
+  - The header shows the Filter input, "Cancel", and an "Export" button with a ▾ menu
+  - The ▾ menu lists "Export Full Doc List as PDF", "Export Table of Contents as PDF", "Export Full Doc List as DOCX" and "Export Table of Contents as DOCX"
+  - Section/category action menus are hidden and drag & drop is disabled
 
 ### Select Sections for Export
 - Test selection in export mode:
-  - Select individual sections
-  - Select entire category
-  - Select all sections
-  - Mix of sections from different categories
-  - CHECK selection indicators
-  - CHECK page count total updates
+  - Select individual sections, an entire category, all sections, and a mix from different categories
+  - CHECK "Selected: N" shows the number of selected **sections**
+  - CHECK the select-all checkbox shows a partial state when only some sections are selected
+- With nothing selected: CHECK the Export button is disabled
 
-### Export as PDF
-- Select sections and click "Export PDF"
+### Exit Export Mode
+- With some sections selected, click "Cancel"
+- CHECK a "Discard Selection" dialog appears; "Keep" stays in export mode with the selection, discarding leaves export mode
+- With nothing selected, "Cancel" leaves export mode directly
+
+### Export Full Doc List as PDF
+- Select sections and click "Export" (defaults to the full doc list as PDF)
 - CHECK:
-  - Loading indicator appears
-  - PDF generation completes
-  - PDF downloads automatically
-  - PDF contains all selected sections
-  - Pages are in correct order
-  - PDF quality is acceptable
-  - Export mode exits after success
+  - The button shows a spinner and "Exporting..." and can't be clicked again
+  - An "Exporting Your Document" dialog appears saying "Check your email" and showing the file name (starting with "Doclist:" and ending in ".pdf")
+  - Export mode exits and the Export button briefly shows a check mark
 
-### Export TOC Only
-- Select sections and choose "TOC Only" option
-- Export and CHECK:
-  - Table of contents generated
-  - All section names included
-  - Page numbers are correct
-  - Formatting is proper
+### Export Table of Contents
+- Enter export mode again, select sections, and choose "Export Table of Contents as PDF" from the ▾ menu
+- CHECK the dialog shows a file name starting with "TOC - " and ending in ".pdf"
 
 ### Export Edge Cases
-- Test with no sections selected (should disable export button)
-- Test with very large selection (50+ pages)
-- Test export failure scenarios (network error)
-- Test canceling export mid-process
-- Test multiple rapid export attempts
+- Select a large number of sections (or all) and export: CHECK it starts normally
+- Click Export repeatedly: CHECK only one export starts (the button is disabled while exporting)
         """,
     ),
     create_qa_test(
@@ -442,39 +420,36 @@ Test filter and search functionality in the document list.
 ---
 
 ## Filter & Search Testing
+The "Filter" input at the top of the doc list filters sections by **section name only** (page text is not searched).
 
-### Basic Search
-- Type in filter/search input at top of doc list
-- Test:
-  - Search by section name (partial match)
-  - Search by page content keywords
-  - Case-insensitive search
-  - Special characters in search
-  - Empty search (shows all)
-  - Very long search query
-
-### Fuzzy Search
-- Test fuzzy matching:
-  - Misspelled section names
-  - Missing characters
-  - Transposed characters
-  - CHECK matches highlight correctly
-  - CHECK non-matches are hidden
-
-### Search with Highlighting
-- Enter search term
+### Basic Filtering
+- Type part of a section name into the Filter input
 - CHECK:
-  - Matching text is highlighted in yellow/accent color
-  - Multiple matches per section all highlighted
-  - Highlighting clears when search cleared
-  - Categories with no matches collapse or hide
+  - Only sections whose name matches are shown; non-matching sections are hidden
+  - Matching is case-insensitive
+  - Categories that contain matches are expanded automatically
+  - Category headers without matches stay visible but show no sections
+- Type a word that appears only in a page's text, not in any section name: CHECK no sections match
+- Clear the input (or click its X): CHECK all sections are shown again and categories return to their default expanded/collapsed state
+
+### Fuzzy Matching
+- Type a section name with some letters left out but in order (e.g. "mdcl rcrd" for "Medical Record")
+- CHECK the section still matches
+- Matching letters are skipped-letter tolerant, not typo tolerant: a misspelled or transposed name may not match, which is expected
+
+### Highlighting and Order
+- Enter a search term
+- CHECK:
+  - The matched characters in each section name are shown in **bold**
+  - For a multi-word query, each word's match is bold
+  - Results within a category are ordered by match quality (best match first)
+  - Bold highlighting disappears when the search is cleared
 
 ### Search Edge Cases
-- Search while categories are collapsed
-- Search with active selection
-- Search in export mode
-- Clear search rapidly (type and clear multiple times)
-- Search with special regex characters (should escape)
+- Search while categories are collapsed: CHECK matching categories expand
+- Search in export mode: CHECK the filter still works
+- Type and clear the search several times quickly: CHECK the list stays consistent
+- Search with special characters such as ( ) [ ] * ?: CHECK nothing breaks
         """,
     ),
     create_qa_test(
@@ -590,12 +565,12 @@ Test chat functionality including sending messages, receiving AI responses, term
   - Formatting (bold, lists, headings) is correct
   - Content is relevant to the query
 
-### Term Highlighting
-- Hover over underlined terms in AI response
+### Term Definitions
+- In an AI response, click a term with a dotted underline
 - CHECK:
-  - Tooltip opens with definition
-  - Tooltip closes correctly
-  - No UI freeze when switching terms
+  - A dialog opens with the term's definition
+  - The dialog closes correctly
+  - Opening another term's definition works without UI freezes
 
 ### Clear
 - Click Clear button
@@ -612,10 +587,12 @@ Test chat functionality including sending messages, receiving AI responses, term
   - Button state changes to "Copied"
 
 ### Export Chat
-- Click Export and choose DOCX, PDF, Plain Text, or Email
+- Click Export
+- CHECK the options are DOCX, PDF and Plain Text (there is no Email option for chat) and an "Include Sources" option is available
+- Export once as DOCX and once as PDF (try "Include Sources")
 - CHECK:
   - Export starts without error
-  - Downloaded file contains complete chat
+  - The downloaded file contains the complete chat
   - Formatting is preserved
 
 ### Case-Based Context
@@ -625,7 +602,10 @@ Test chat functionality including sending messages, receiving AI responses, term
   - Case B has separate history
   - No cross-case contamination
 - Return to Case A
-- CHECK history remains intact
+- CHECK:
+  - Case A may open with an empty chat; that is expected
+  - The chat history selector ("Select a conversation") lists Case A's earlier conversation, and opening it shows the messages intact
+  - Case B's conversation is not listed in Case A's history
 
 ### Sources Modal
 - In an AI response that shows Sources: 1 2 3…, click on any source number
@@ -648,26 +628,26 @@ Test PDF viewer functionality including page selection, zoom, OCR text view, rot
 ## PDF Viewer Testing
 
 ### Page Selection
-- Click on any page thumbnail in the left panel
+- Expand a section in the doc list and click one of its page tiles
 - CHECK:
   - The selected page opens in the main doc viewer area
-  - Active page is highlighted in the left panel
+  - The page tile is highlighted in the doc list
   - Page number in the top navigation updates accordingly
 - Click multiple pages with different content types (text, tables, images)
 - CHECK:
   - Each page loads without delays
   - No rendering artifacts or distortion
   - Navigation stays synchronized with the current page
-- After selecting a page, check bottom toolbar availability
-- CHECK bottom bar shows correct actions (Zoom, Text, Rotate, Delete when applicable)
+- After selecting a page, check the bottom toolbar
+- CHECK it reads "Page N selected" and shows Text, Highlight, Zoom, Crop to Copy, Add Note, Rotate and Delete (and Add to Chronology if enabled), plus a close (X) button
 
 ### Zoom Page
 - Select a page
 - Click Zoom
 - CHECK:
-  - A magnifier tool appears
-  - Moving the cursor zooms the underlying content
-  - Zoomed view is clear and high-resolution
+  - While hovering the page, the whole page is enlarged (2×) in place and follows the cursor (there is no separate magnifier)
+  - The zoomed view is clear and high-resolution
+  - Rotate and Delete are disabled while Zoom is on
   - Toggling Zoom off returns the page to normal view
 - Test zooming on text, images, small fonts
 - CHECK all details remain readable without pixelation
@@ -692,9 +672,9 @@ Test PDF viewer functionality including page selection, zoom, OCR text view, rot
 - Click Delete in the bottom toolbar
 - Confirm deletion in confirmation dialog
 - CHECK:
-  - Page is removed
-  - Navigation numbers update
-  - Next valid page opens
+  - A "Page deleted" toast appears and the page is removed
+  - Page numbers update
+  - The selection clears and the bottom toolbar disappears (no other page is selected automatically)
   - {CHECK_PERSISTENCE}
 
 ### Viewer Sync With Doc List
@@ -702,16 +682,14 @@ Test PDF viewer functionality including page selection, zoom, OCR text view, rot
 - Click a page within that section
 - CHECK:
   - Viewer scrolls to the correct page
-  - Left panel and doc list remain synchronized
+  - The viewer and the doc list remain synchronized
   - Selecting the next/previous page updates selection in doc list
 
 ### Bottom Toolbar Visibility
 - Select a page
-- CHECK:
-  - Bottom toolbar appears
-  - Buttons match available actions: Zoom, Text, Rotate, Delete
-- Click outside the page
-- CHECK toolbar hides when no page is actively selected
+- CHECK the bottom toolbar appears
+- Click the same page again: CHECK the toolbar hides
+- Select a page and click the toolbar's close (X) button: CHECK the toolbar hides
         """,
     ),
     create_qa_test(
@@ -729,25 +707,28 @@ Test version management functionality including creating, renaming, deleting, an
 
 ## Version Management Testing
 
+The versions dropdown and the ⋮ actions button are on the case's files page.
+
 ### Open Version List
-- Open the versions dropdown at the top of the case
+- Open the versions dropdown (it is disabled while the case has only one version; clone first if needed)
 - CHECK:
   - Active version (Master or other) is highlighted
   - All existing versions appear in the list
   - No missing or duplicate entries
 
 ### Clone Version
-- Click the ⋯ button next to the version select
-- Select Create Version
-- Enter a new version name
+- Wait until all files in the case have finished processing (Clone is disabled until then)
+- Click the ⋮ button next to the version select and choose "Clone"
+- CHECK a "Create New Version" dialog opens with a default name ending in "(copy)"
+- Enter a new version name and confirm
 - CHECK:
-  - New version is created successfully
+  - A "Version ready" message appears and the app switches to the new version automatically
   - The cloned version contains the same documents, sections, and page structure as the original
-  - New version appears in the versions dropdown
-  - Switching to the cloned version loads identical content
+  - The new version appears in the versions dropdown
 
 ### Rename Version
-- Click ⋯ next to the version dropdown
+- On Master, open the ⋮ menu: CHECK only "Clone" is offered (no Rename or Delete)
+- Switch to a non-Master version and click ⋮ next to the version dropdown
 - Select Rename
 - Enter a new version name and confirm
 - CHECK:
@@ -756,13 +737,13 @@ Test version management functionality including creating, renaming, deleting, an
   - No breaking of version ordering or selection
 
 ### Delete Version
-- Click ⋯ next to the version dropdown
+- On a non-Master version, click ⋮ next to the version dropdown
 - Select Delete
 - Confirm deletion
 - CHECK:
   - Version disappears from the versions dropdown
   - Other versions remain unchanged
-  - Interface switches to the next available version
+  - The app switches back to the Master version
   - Deleted version's content is no longer accessible
 
 ### Switch Between Versions
