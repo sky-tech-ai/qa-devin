@@ -160,7 +160,7 @@ Test all section operations in the document list including rename, move, split, 
   - Cancel deletion - section remains
   - {CHECK_PAGE_COUNT_UPDATES} for category
   - CHECK deletion persists after refresh
-- CHECK "Delete" is disabled when only one section exists in fallback category
+- CHECK "Delete" stays available for the only section left in the fallback category (an empty fallback category is allowed)
         """,
     ),
     create_qa_test(
