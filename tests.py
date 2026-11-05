@@ -441,7 +441,7 @@ Test that a failed doc list export shows an error and keeps export mode and the 
 
 ## Simulating a Failed Export
 The export request has to fail on purpose. Use Playwright in a scratch directory (`npm i playwright`) and attach to the already-open Chrome over CDP (`chromium.connectOverCDP("http://localhost:29229")`), so you keep the logged-in session. Find the page with the case open and add a route that aborts the export requests:
-`page.route(/\\/doclist\\/export(-docx)?\\/async/, route => route.abort())`
+`page.route("**/doclist/export*/async", route => route.abort())` (matches both the PDF and the DOCX export)
 Keep that script running while you do the failing exports below, and keep interacting with the app through the browser as usual.
 
 ### Failed PDF Export
@@ -460,7 +460,7 @@ Keep that script running while you do the failing exports below, and keep intera
 - CHECK the same error toast appears, no dialog appears, and export mode and "Selected: 2" are kept
 
 ### Retry After the Failure
-- Remove the route (`page.unroute(...)`, or stop the script) so requests go through again
+- Remove the route (`page.unroute("**/doclist/export*/async")`, or stop the script) so requests go through again
 - Without changing the selection, click "Export"
 - CHECK:
   - An "Exporting Your Document" dialog appears saying "Check your email", with a file name starting with "Doclist:" and ending in ".pdf"
