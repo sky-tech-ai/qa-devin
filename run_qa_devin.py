@@ -27,13 +27,15 @@ SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN", "")
 slack_client = WebClient(token=SLACK_BOT_TOKEN)
 
 
-class QATestResult(TypedDict):
+class QATestResult(TypedDict, total=False):
     test_name: str
     session_id: str
     session_url: str
     status_enum: str
     success: bool
-    message: str
+    message: str  # one-line summary (or the old free-text message)
+    checks: list[dict]  # [{part, name, passed, details}]
+    archived_cases: list[str]
 
 
 MAX_TIME_PER_TEST = 60 * 60  # 60 minutes (combined tests run two parts on one case)
@@ -46,9 +48,24 @@ QA_RESULT_SCHEMA = {
     "type": "object",
     "properties": {
         "success": {"type": "boolean", "description": "true only if every CHECK passed"},
-        "message": {"type": "string", "description": "Every CHECK with PASSED/FAILED and the reason for failures"},
+        "summary": {"type": "string", "description": "One short sentence, max 150 characters"},
+        "checks": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "part": {"type": "string", "description": "Test name of the part (combined sessions), else empty"},
+                    "name": {"type": "string", "description": "What was checked, max 60 characters"},
+                    "passed": {"type": "boolean"},
+                    "details": {"type": "string", "description": "If failed: what happened, max 150 characters; else empty"},
+                },
+                "required": ["part", "name", "passed", "details"],
+                "additionalProperties": False,
+            },
+        },
+        "archived_cases": {"type": "array", "items": {"type": "string"}},
     },
-    "required": ["success", "message"],
+    "required": ["success", "summary", "checks", "archived_cases"],
     "additionalProperties": False,
 }
 
@@ -156,61 +173,114 @@ async def poll_session_and_eval(
                 status["status_enum"] or "unknown" if status else "never_started"
             ),
             "success": False,
-            "message": "No structured IO",
+            "message": (
+                f"Devin didn't report a result (session {status['status_enum'] or 'unknown'}"
+                + (", timed out" if time.time() - start_time > MAX_TIME_PER_TEST else "")
+                + "). Open the session to see what happened."
+                if status
+                else "The Devin session never started."
+            ),
         }
 
     success: bool = output.get("success", False)
-    message: str = output.get("message", "")
     x: QATestResult = {
         "test_name": test_name,
         "session_id": session_id,
         "session_url": session_url,
         "status_enum": status["status_enum"] or "unknown",
         "success": success,
-        "message": message,
+        # "message" is the old free-text format (and what the chat fallback may find)
+        "message": output.get("summary") or output.get("message", ""),
+        "checks": [c for c in output.get("checks") or [] if isinstance(c, dict)],
+        "archived_cases": output.get("archived_cases") or [],
     }
     print(f"Test finished: {x}", flush=True)
     progress.setdefault(test_name, {})["success"] = success
     return x
 
 
-async def send_final_results_to_slack(results: list[QATestResult]):
-    # Post session links to slack
-    slack_summary = "*QA Test Results*\n"
-    slack_summary += f"*Command*: `python3 {' '.join(sys.argv)}`\n"
-    slack_summary += "-" * 100 + "\n"
+def slack_escape(text: str) -> str:
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-    # Add results to summary
-    for result in results:
-        emoji = "✅" if result["success"] else "❌"
-        slack_summary += f"{emoji} *<{result['session_url']}|{result['test_name']}>*\n"
 
-    thread_ts = None
-    if SLACK_BOT_TOKEN:
-        main_message = slack_client.chat_postMessage(
-            channel=SLACK_TEST_RESULTS_CHANNEL_ID,
-            text=slack_summary,
-        )
-        print(main_message)
+def shorten(text: str, limit: int) -> str:
+    text = " ".join((text or "").split())
+    return text if len(text) <= limit else text[: limit - 1] + "…"
 
-        # Post detailed results in thread
-        thread_ts = main_message["ts"]
 
-    for result in results:
-        thread_message = (
-            f"Detailed results for <{result['session_url']}|{result['test_name']}>:\n"
-        )
-        thread_message += f"Status: {result['status_enum']}\n"
-        if result["message"]:
-            thread_message += f"Message: {result['message']}\n"
+def check_counts(result: QATestResult) -> str:
+    checks = result.get("checks") or []
+    if not checks:
+        return ""
+    passed = sum(1 for c in checks if c.get("passed"))
+    return f"{passed}/{len(checks)} checks"
 
-        if SLACK_BOT_TOKEN and thread_ts:
-            slack_client.chat_postMessage(
-                channel=SLACK_TEST_RESULTS_CHANNEL_ID,
-                thread_ts=thread_ts,
-                text=thread_message,
-            )
-        print(thread_message)
+
+def format_summary(results: list[QATestResult], environment: str, minutes: int) -> str:
+    """Top-level message: one line for the run, one line per test."""
+    failed = [r for r in results if not r["success"]]
+    if failed:
+        headline = f"❌ {len(failed)} of {len(results)} tests failed"
+    else:
+        headline = f"✅ all {len(results)} tests passed"
+    lines = [f"*QA {environment}* · {headline} · {minutes} min"]
+    for r in results:
+        icon = "✅" if r["success"] else "❌"
+        line = f"{icon} <{r['session_url']}|{r['test_name']}>"
+        if check_counts(r):
+            line += f" · {check_counts(r)}"
+        lines.append(line)
+    if failed:
+        lines.append("_Details for failed tests in the thread._")
+    return "\n".join(lines)
+
+
+def format_failure(r: QATestResult) -> str:
+    """Thread reply for a failed test: only the failed checks."""
+    header = f"❌ *{r['test_name']}*"
+    if check_counts(r):
+        header += f" · {check_counts(r)} passed"
+    header += f" · <{r['session_url']}|Devin session>"
+    lines = [header]
+    failed_checks = [c for c in r.get("checks") or [] if not c.get("passed")]
+    for c in failed_checks:
+        part = f"[{c['part'].removeprefix('test-')}] " if c.get("part") else ""
+        name = slack_escape(shorten(c.get("name", ""), 80))
+        details = slack_escape(shorten(c.get("details", ""), 200))
+        lines.append(f"• *{part}{name}*" + (f": {details}" if details else ""))
+    if not failed_checks and r.get("message"):
+        # No per-check data (old format, or the session never reported).
+        lines.append(slack_escape(shorten(r["message"], 400)))
+    if r.get("archived_cases"):
+        lines.append(f"🗄 Archived {len(r['archived_cases'])} case(s)")
+    return "\n".join(lines)
+
+
+def post_to_slack(text: str, thread_ts: str | None = None) -> str | None:
+    if not SLACK_BOT_TOKEN:
+        return None
+    response = slack_client.chat_postMessage(
+        channel=SLACK_TEST_RESULTS_CHANNEL_ID,
+        text=text,
+        thread_ts=thread_ts,
+        unfurl_links=False,  # no "Devin | The AI Software Engineer" preview cards
+        unfurl_media=False,
+    )
+    return response["ts"]
+
+
+async def send_final_results_to_slack(
+    results: list[QATestResult], environment: str = "dev", minutes: int = 0
+):
+    summary = format_summary(results, environment, minutes)
+    print(summary, flush=True)
+    thread_ts = post_to_slack(summary)
+    for r in results:
+        if r["success"]:
+            continue
+        text = format_failure(r)
+        print(text, flush=True)
+        post_to_slack(text, thread_ts=thread_ts)
 
 
 async def run_tests_and_send_to_slack(
@@ -221,6 +291,7 @@ async def run_tests_and_send_to_slack(
     johndoejunior_zip_url: str,
     environment: str = "dev",
 ) -> list[QATestResult]:
+    run_start = time.time()
     eval_tasks = []
     session_links: list[tuple[str, str, str]] = []
     if test_names:
@@ -257,18 +328,11 @@ async def run_tests_and_send_to_slack(
     print("Done starting sessions")
 
     # Send initial message with session links
-    links_message = "*Started QA Test Sessions*\n"
-    links_message += f"*Command*: `python3 {' '.join(sys.argv)}`\n"
-    links_message += "-" * 100 + "\n"
-    for _, session_url, test_name in session_links:
-        links_message += f"• <{session_url}|{test_name}>\n"
-
-    print(links_message)
-
-    if SLACK_BOT_TOKEN:
-        slack_client.chat_postMessage(
-            channel=SLACK_TEST_RESULTS_CHANNEL_ID, text=links_message
-        )
+    links_message = f"*QA {environment}* · started {len(session_links)} Devin sessions: " + ", ".join(
+        f"<{session_url}|{test_name}>" for _, session_url, test_name in session_links
+    )
+    print(links_message, flush=True)
+    post_to_slack(links_message)
 
     progress_task = asyncio.create_task(log_progress(session_links))
     # Use return_exceptions=True to prevent exceptions from stopping other tasks
@@ -294,7 +358,9 @@ async def run_tests_and_send_to_slack(
         else:
             raise ValueError(f"Unknown result type: {type(result)}")
 
-    await send_final_results_to_slack(processed_results)
+    await send_final_results_to_slack(
+        processed_results, environment, round((time.time() - run_start) / 60)
+    )
     return processed_results
 
 

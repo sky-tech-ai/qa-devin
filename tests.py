@@ -17,9 +17,15 @@ Before you send the final result, archive every case you created in this session
 - Use the External API ({{external_api_specs_url}}) with the bearer token from the {{api_key_secret}} secret: `PATCH /cases/{{{{caseId}}}}/archive` for each case you created. Skip cases the test already archived.
 - Only archive cases you created in this session. Never archive other cases.
 - If archiving fails, include the error in the final message. It does not change whether the test passed.
-- End the final message with a line "Archived cases: <ids>".
+- Put the ids of the cases you archived (including ones the test archived) in 'archived_cases'.
 
-After you are done, send a message with all the CHECKs you did and what the results were. You MUST use Devin's structured output feature (not a file) to send a JSON object with 'success' (boolean) and 'message' (string). The message should include whether each CHECK you ran passed or failed (and a reason if it failed).
+## Final result
+When you are done, you MUST use Devin's structured output feature (not a file, not a chat message) with:
+- 'success': true only if every CHECK passed.
+- 'summary': one short sentence, max 150 characters, e.g. "3 of 4 checks passed; archived cases still appear in GET /cases".
+- 'checks': one entry per CHECK you ran: 'name' (what was checked, max 60 characters), 'passed' (boolean), 'details' (if it failed: what happened, max 150 characters, no ids or timestamps unless they matter; empty string if it passed), 'part' (empty string unless told otherwise).
+- 'archived_cases': the ids of the cases you archived.
+Keep it short: the result is shown in Slack.
 """
 
 DEVIN_QA_LOGIN_INSTRUCTIONS = """\
@@ -792,7 +798,7 @@ Do the test setup once, then run the parts one after another on the same case.
 This overrides the "abort" rule above: if a CHECK fails, record it and continue with
 the next step and the next part. Only abort if the setup fails or the app is unusable.
 In the structured output, 'success' is true only if every CHECK in every part passed,
-and the message must list the CHECKs grouped by part.
+and each check's 'part' is the test name of the part it belongs to.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
