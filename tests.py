@@ -334,14 +334,34 @@ Batch selection uses **Shift+click and Cmd/Ctrl+click on section rows** (outside
   - {CHECK_PAGE_COUNT_UPDATES} correctly
 
 ### Move Multiple Selected Sections
-- Select multiple sections, including from different categories
-- Click "Move" in the selection toolbar
-- CHECK a "Move To..." dialog opens with a searchable category picker
-- Pick a target category and confirm
+#### Move to an Existing Category in Document-List Order
+- Clear any search filter, exit export mode, and clear section selection.
+- Find three sections in one source category and record their names and displayed top-to-bottom order as A1, A2, A3. These are labels for this test, not required section names. If needed, split a multi-page section to prepare three sections before continuing.
+- Choose a different, already saved target category containing at least one section. Record its current section order and both categories' page counts.
+- Hold Ctrl (Cmd on macOS) and click the section row A3 FIRST, then A1. Do not use export checkboxes or Shift-click: click order must be opposite to document-list order.
+- CHECK exactly A1 and A3 are selected, A2 is not selected, and the section selection toolbar shows a count of 2.
+- Click "Move" in the section selection toolbar, choose the saved target category in "Move To...", then confirm with "Move".
 - CHECK:
-  - All selected sections move to the target category
-  - {CHECK_PAGE_COUNT_UPDATES} for all affected sections
-  - {CHECK_SELECTION_CLEARS} move
+  - The target's original sections remain in the recorded order, followed by A1 then A3, NOT A3 then A1.
+  - A1 and A3 disappear from the source; A2 stays in the source and unselected sections keep their order.
+  - {CHECK_PAGE_COUNT_UPDATES} for both categories by the moved sections' page counts.
+  - {CHECK_SELECTION_CLEARS} move.
+- Refresh the page and reopen the categories.
+- {CHECK_ORDER_PERSISTS}: the target still ends with A1, A3, and neither moved section reappears in the source.
+
+#### Move to a New Category in Document-List Order
+- Use "Add Category" to create a uniquely named empty category in the document list. If a create-new-name option is offered, select it. Do not refresh or move any documents into it yet: this must still be a new, unsaved category, not an existing saved category.
+- Choose two sections from DIFFERENT source categories. Record their names and current top-to-bottom order across the whole document list as U then V, and record their page counts and their source categories' page counts.
+- Clear section selection, then Ctrl/Cmd-click V FIRST and U SECOND.
+- CHECK exactly U and V are selected and the section selection toolbar shows a count of 2.
+- Click "Move" in the section selection toolbar, choose the newly added empty category in "Move To...", then confirm with "Move".
+- CHECK:
+  - The new category contains exactly U then V, NOT V then U.
+  - U and V disappear from their respective source categories; unselected sections keep their order.
+  - {CHECK_PAGE_COUNT_UPDATES}: each source loses the moved section's pages and the new category has the sum of U and V's pages.
+  - {CHECK_SELECTION_CLEARS} move.
+- Refresh the page and reopen the categories.
+- {CHECK_ORDER_PERSISTS}: the new category remains saved with exactly U then V, and neither section reappears in its source category.
 
 ### Delete Multiple Selected Sections
 - Select multiple sections
