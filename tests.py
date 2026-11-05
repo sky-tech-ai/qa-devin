@@ -409,11 +409,13 @@ Exports are generated on the server and **delivered by email**; nothing download
 - With some sections selected, click "Cancel"
 - CHECK a "Discard Selection" dialog appears; "Keep" stays in export mode with the selection, discarding leaves export mode
 - With nothing selected, "Cancel" leaves export mode directly
+- CHECK "Cancel" is enabled in export mode before any export is started
 
 ### Export Full Doc List as PDF
 - Select sections and click "Export" (defaults to the full doc list as PDF)
 - CHECK:
   - The button shows a spinner and "Exporting..." and can't be clicked again
+  - While "Exporting..." is shown, "Cancel" is disabled (the export can't be cancelled once requested). This only lasts a second or two, so take a screenshot right after clicking Export
   - An "Exporting Your Document" dialog appears saying "Check your email" and showing the file name (starting with "Doclist:" and ending in ".pdf")
   - Export mode exits and the Export button briefly shows a check mark
 
