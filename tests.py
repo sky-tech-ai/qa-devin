@@ -11,6 +11,14 @@ Your job is to do QA testing on the {{url}} website.
 Please follow the instructions below and make sure every line which starts with "CHECK" is working as expected.
 If it is not then you should abort and send message to the user saying what went wrong. No need to send a message if it is working as expected.
 After you finish each section (and each Part, if there are several), send a one-line progress message, e.g. "Progress: finished Rename Section, 4/4 CHECKs passed". Don't wait for a reply.
+
+## Cleanup (always)
+Before you send the final result, archive every case you created in this session, even if a CHECK failed or you aborted early:
+- Use the External API ({{external_api_specs_url}}) with the bearer token from the {{api_key_secret}} secret: `PATCH /cases/{{{{caseId}}}}/archive` for each case you created. Skip cases the test already archived.
+- Only archive cases you created in this session. Never archive other cases.
+- If archiving fails, include the error in the final message. It does not change whether the test passed.
+- End the final message with a line "Archived cases: <ids>".
+
 After you are done, send a message with all the CHECKs you did and what the results were. You MUST use Devin's structured output feature (not a file) to send a JSON object with 'success' (boolean) and 'message' (string). The message should include whether each CHECK you ran passed or failed (and a reason if it failed).
 """
 
@@ -21,7 +29,6 @@ For basic HTTP authentication, use the username:password from the {basic_auth_se
 DOCLIST_TEST_SETUP = f"""\
 ## Test Setup Requirements
 - Log in to the app.
-- Create a new case.
 - Download the zip archive from {{johndoejunior_zip_url}}, extract it
 - Take the bearer token from {{api_key_secret}} secret and use it to authenticate with the External API: {{external_api_specs_url}}.
 - Create a new case using the External API: {{external_api_specs_url}}.
