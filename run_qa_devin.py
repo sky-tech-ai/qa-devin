@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import json
 import os
 import sys
 import time
@@ -39,6 +40,35 @@ MAX_TIME_PER_TEST = 60 * 60  # 60 minutes (combined tests run two parts on one c
 PROGRESS_INTERVAL = int(os.getenv("QA_PROGRESS_MINUTES", "10")) * 60
 # Devin statuses after which the session won't do more work on its own.
 DONE_STATUSES = {"blocked", "stopped", "finished", "expired"}
+
+# Passed when creating each session so Devin gets its structured-output tool.
+QA_RESULT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "success": {"type": "boolean", "description": "true only if every CHECK passed"},
+        "message": {"type": "string", "description": "Every CHECK with PASSED/FAILED and the reason for failures"},
+    },
+    "required": ["success", "message"],
+    "additionalProperties": False,
+}
+
+
+def result_from_messages(status: dict) -> dict | None:
+    """Fallback: find a {"success": ..., "message": ...} JSON object Devin wrote in the chat."""
+    decoder = json.JSONDecoder()
+    for m in reversed(status.get("messages") or []):
+        text = m.get("message") or ""
+        if "user" in (m.get("type") or "") or '"success"' not in text:
+            continue
+        for i in [i for i, ch in enumerate(text) if ch == "{"]:
+            try:
+                obj, _ = decoder.raw_decode(text, i)
+            except ValueError:
+                continue
+            if isinstance(obj, dict) and isinstance(obj.get("success"), bool):
+                return obj
+    return None
+
 
 # Latest state per test, written by poll_session_and_eval, read by log_progress.
 progress: dict[str, dict] = {}
@@ -114,7 +144,10 @@ async def poll_session_and_eval(
             break
         await asyncio.sleep(20)
 
-    if not status or not status["structured_output"]:
+    output = (status and status.get("structured_output")) or (status and result_from_messages(status))
+    if status and not status.get("structured_output") and output:
+        print(f"{test_name}: no structured output, using the JSON from Devin's chat message", flush=True)
+    if not output:
         return {
             "test_name": test_name,
             "session_id": session_id,
@@ -126,8 +159,8 @@ async def poll_session_and_eval(
             "message": "No structured IO",
         }
 
-    success: bool = status["structured_output"].get("success", False)
-    message: str = status["structured_output"].get("message", "")
+    success: bool = output.get("success", False)
+    message: str = output.get("message", "")
     x: QATestResult = {
         "test_name": test_name,
         "session_id": session_id,
@@ -205,7 +238,11 @@ async def run_tests_and_send_to_slack(
             johndoejunior_zip_url=johndoejunior_zip_url,
             **ENVIRONMENTS[environment],
         )
-        session_response = await devin_api_client.start_session(prompt)
+        session_response = await devin_api_client.start_session(
+            prompt,
+            title=f"QA {environment}: {test['test_name']}",
+            structured_output_schema=QA_RESULT_SCHEMA,
+        )
         assert session_response["session_id"] is not None
         session_id = session_response["session_id"]
         session_url = session_response["url"]

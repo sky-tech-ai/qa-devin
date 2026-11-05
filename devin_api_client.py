@@ -60,12 +60,24 @@ class DevinAPIClient:
             ) as response:
                 return await response.json()
 
-    async def start_session(self, prompt: str) -> DevinAPISessionResponse:
+    async def start_session(
+        self,
+        prompt: str,
+        title: str | None = None,
+        structured_output_schema: dict | None = None,
+    ) -> DevinAPISessionResponse:
+        body: dict = {"prompt": prompt}
+        if title:
+            body["title"] = title
+        if structured_output_schema:
+            # Without a schema the session has no structured-output tool and
+            # Devin can only paste the JSON into the chat.
+            body["structured_output_schema"] = structured_output_schema
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f"{self.base_url}/sessions",
                 headers=self.headers,
-                json={"prompt": prompt},
+                json=body,
             ) as response:
                 response_data = await response.json()
                 return response_data
