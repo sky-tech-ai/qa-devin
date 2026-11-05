@@ -493,24 +493,31 @@ Test duplicate detection functionality in the document list.
 ## Duplicate Detection Testing
 
 ### Find Duplicates
-- Click "Duplicates" button if available
+- If there is no "Duplicates" button or no duplicate groups, create a duplicate first: rename one section to exactly the same name as another section.
+- Click the "Duplicates" button
 - CHECK:
-  - UI shows duplicate detection results
-  - Sections with similar content are grouped
-  - Similarity percentage/score shown
-  - Can navigate to each duplicate section
+  - A "Duplicates" dialog opens ("Find and manage duplicate sections using text-based detection.")
+  - Duplicate groups are listed, each labelled "Identical" or "Possible match" with a page count (there is no similarity percentage)
+  - Selecting a group shows its sections side by side for comparison
+  - "Sync scroll" scrolls the compared sections together
 
-### Merge Duplicates
-- From duplicate detection UI:
-  - Select duplicate sections to merge
-  - Confirm merge
-  - CHECK sections combine correctly
-  - CHECK duplicates list updates
+### Rename from the Duplicates dialog
+- In the side-by-side view, use "Rename" on one section and enter a new name
+- CHECK the new name shows in the dialog and in the document list
 
-### Dismiss Duplicates
-- Test dismissing false positive duplicates
-- CHECK dismissed pairs don't reappear
-- Test re-running duplicate detection
+### Delete Duplicates
+- In the side-by-side view, select every section in the group
+- CHECK the message "At least one section must be kept" appears and the delete button is disabled
+- Unselect sections until one is selected for deletion
+- CHECK the button reads "Delete 1 Duplicate" and "1 section to delete" is shown
+- Click the delete button: CHECK a confirmation dialog shows which sections will be deleted and which are kept
+- Cancel once: CHECK nothing is deleted
+- Delete again and confirm
+- CHECK the deleted section disappears from the document list and the duplicates list updates (the group disappears if only one section is left)
+
+### Analyze with AI
+- Click "Analyze with AI"
+- CHECK progress is shown while analyzing, then either groups labelled "AI Detected" appear or the message "No new duplicate groups found by AI analysis." is shown
         """,
     ),
     create_qa_test(
