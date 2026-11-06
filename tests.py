@@ -251,7 +251,7 @@ Test all drag and drop functionality in the document list including reordering c
 ---
 
 ## Drag & Drop Testing
-Rules in the current app: categories and sections can only be dragged while they are **collapsed** (the grip handle appears on hover), and sections can only be dropped into an **expanded** category. Dragging is off in export mode and multi-select mode.
+Rules in the current app: categories and sections can only be dragged while they are **collapsed** (the grip handle appears on hover), and sections can only be dropped into an **expanded** category. Dragging is off in export mode; in multi-select mode (2+ sections selected) section dragging is off, while categories and pages can still be dragged.
 
 ### Reorder Categories
 - Collapse a category, hover it, and drag it by the grip handle (vertical lines icon)
