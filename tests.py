@@ -531,7 +531,7 @@ Test duplicate detection functionality in the document list.
 - If there is no "Duplicates" button or no duplicate groups, create a duplicate first: rename one section to exactly the same name as another section.
 - Click the "Duplicates" button
 - CHECK:
-  - A "Duplicates" dialog opens ("Find and manage duplicate sections using text-based detection.")
+  - A dialog titled "Duplicates" opens, with no red error message under the title (its description is screen-reader-only, so don't check for visible description text)
   - Duplicate groups are listed, each labelled "Identical" or "Possible match" with a page count (there is no similarity percentage)
   - Selecting a group shows its sections side by side for comparison
   - "Sync scroll" scrolls the compared sections together
