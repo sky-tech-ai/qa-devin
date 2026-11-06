@@ -735,7 +735,7 @@ Test PDF viewer functionality including page selection, zoom, OCR text view, rot
 - Click Delete in the bottom toolbar
 - Confirm deletion in confirmation dialog
 - CHECK:
-  - A "Page deleted" toast appears and the page is removed
+  - A "Page deleted" toast appears and the page is removed. The toast disappears after about 5 seconds, so check for it immediately after confirming: right after the click, run `document.body.innerText.includes("Page deleted")` in the browser console (or take a screenshot within 2 seconds). Only fail this CHECK if the text never appears.
   - Page numbers update
   - The selection clears and the bottom toolbar disappears (no other page is selected automatically)
   - {CHECK_PERSISTENCE}
