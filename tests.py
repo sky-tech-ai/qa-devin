@@ -277,7 +277,7 @@ Rules in the current app: categories and sections can only be dragged while they
   - The section appears in the new category with its pages and page-count badge unchanged
   - Moving out the last section of a category removes that (now empty) category
 - Create a new category with "Add category", then drag a section into its dashed drop zone ("Category created, drag sections or pages here to activate it."): CHECK the category becomes a normal category with that section
-- Do several moves quickly: CHECK the final state is correct
+- Do several moves one after another: CHECK the final state is correct and no "Outdated Version Detected" dialog appears
 - {CHECK_ORDER_PERSISTS}
 
 ### Reorder Pages Within Section
@@ -293,7 +293,10 @@ Rules in the current app: categories and sections can only be dragged while they
 
 ### Drag & Drop Edge Cases
 - Test with slow internet (enable throttling): CHECK the order updates immediately and is still correct once the request finishes
-- Drag immediately after another drag: CHECK both moves apply
+- With throttling on, drop a section and immediately try to drag another section, category or page:
+  - CHECK dragging is disabled (no grip handle, nothing moves) while the first move is still saving
+  - CHECK dragging works again as soon as the save finishes, and the second move then applies
+  - CHECK no "Outdated Version Detected" dialog appears (version conflicts are only for edits by another user)
 - If a page move fails, CHECK it reverts and the toast "Failed to move the page. Please try again." appears (you may not be able to force a failure; skip if so)
         """,
     ),
