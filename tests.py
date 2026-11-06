@@ -267,7 +267,7 @@ Rules in the current app: categories and sections can only be dragged while they
 - CHECK an expanded section (pages showing) can't be dragged
 - Test:
   - Move a section up and down, and drop it between other sections
-  - CHECK a gap opens where the section will land
+  - CHECK a blue insertion line shows where the section will land (other sections don't move out of the way)
   - CHECK section order updates immediately
   - {CHECK_ORDER_PERSISTS}
 
