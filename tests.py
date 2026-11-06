@@ -552,7 +552,7 @@ Test duplicate detection functionality in the document list.
 
 ### Analyze with AI
 - Click "Analyze with AI"
-- CHECK progress is shown while analyzing, then either groups labelled "AI Detected" appear or the message "No new duplicate groups found by AI analysis." is shown
+- CHECK progress is shown while analyzing, then either groups labelled "AI Detected" appear or a notification "AI analysis complete" with "No new duplicate groups found." appears (it disappears after a few seconds, so watch for it as soon as analysis ends)
         """,
     ),
     create_qa_test(
