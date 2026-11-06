@@ -861,11 +861,13 @@ and each check's 'part' is the test name of the part it belongs to.
     return create_qa_test(test_name, combined)
 
 
-# What runs by default: 7 sessions, 6 of them creating a John Doe case (was 11).
+# What runs by default: 8 sessions, 7 of them creating a John Doe case (was 11).
 QA_TESTS: list[QATest] = [
     next(t for t in SINGLE_TESTS if t["test_name"] == "test-external-api"),
     combine_qa_tests("test-doclist-expand-and-sections", ["test-doclist-expand-collapse", "test-doclist-section-ops"]),
-    combine_qa_tests("test-doclist-duplicates-and-categories", ["test-doclist-duplicates", "test-doclist-category-ops"]),
+    # Duplicate analysis is big enough to get its own session (and case).
+    next(t for t in SINGLE_TESTS if t["test_name"] == "test-doclist-duplicates"),
+    next(t for t in SINGLE_TESTS if t["test_name"] == "test-doclist-category-ops"),
     combine_qa_tests("test-doclist-search-and-drag-drop", ["test-doclist-search", "test-doclist-drag-drop"]),
     combine_qa_tests("test-pdf-viewer-and-export", ["test-pdf-viewer", "test-doclist-export"]),
     combine_qa_tests("test-chat-and-versions", ["test-chat", "test-version-management"]),
