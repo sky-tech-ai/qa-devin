@@ -90,6 +90,56 @@ You need to:
         """,
     ),
     create_qa_test(
+        test_name="test-doclist",
+        user_prompt=f"""
+## Objective
+Test the main document list flows: organize sections and categories, find sections, and export the doc list.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+{DOCLIST_TEST_SETUP}
+
+---
+
+## Document List
+Each section row and category header has a ⋮ actions menu. Do the steps in order; they all use the same case.
+
+### Organize Sections
+- Rename a section: ⋮ → "Rename", type a new name ending in " QA", press Enter.
+- CHECK the new name is shown in the doc list.
+- Move that section: ⋮ → "Move To...", pick a different category.
+- CHECK it disappears from its old category and appears in the new one, and both categories' page counts update.
+- Delete another section: ⋮ → "Delete", confirm.
+- CHECK the section is gone and its category's page count drops.
+
+### Organize Categories
+- Click "Add Category" in the doc list actions bar, name it "QA Category", press Enter.
+- Collapse a section in another category, hover it, and drag it by its grip handle (vertical lines icon) into the "QA Category" drop zone.
+- CHECK "QA Category" now contains that section.
+- On "QA Category": ⋮ → "Delete", choose a category to move its section to, and confirm.
+- CHECK "QA Category" is gone and its section is in the chosen category.
+- Refresh the page.
+- CHECK the renamed and moved sections, the deleted section and the deleted category look the same as before the refresh.
+
+### Filter
+- Type part of a section name into the "Filter" input at the top of the doc list.
+- CHECK only sections whose names match are shown. Then clear the filter.
+
+### Duplicates
+- Rename one section to exactly the same name as another section, so there is a duplicate.
+- Click the "Duplicates" button.
+- CHECK a "Duplicates" dialog lists a group containing both sections.
+- In that group, select one section to delete, click "Delete 1 Duplicate" and confirm.
+- CHECK that section disappears from the document list and the other one is kept.
+
+### Export the Doc List
+Exports are delivered by email; don't check file contents.
+- Click "Export" in the doc list actions, select one category's checkbox, and click "Export".
+- CHECK an "Exporting Your Document" dialog appears saying to check your email, with a file name starting with "Doclist:" and ending in ".pdf".
+        """,
+    ),
+    create_qa_test(
         test_name="test-doclist-section-ops",
         user_prompt=f"""
 ## Objective
@@ -965,15 +1015,18 @@ and each check's 'part' is the test name of the part it belongs to.
     return create_qa_test(test_name, combined)
 
 
-# What runs by default: 8 sessions, 7 of them creating a John Doe case.
+# What runs by default: 5 sessions, 4 of them creating a John Doe case.
+# Main user flows only: Devin sessions are expensive. The detailed doc list
+# specs above stay selectable by name with --tests.
 QA_TESTS: list[QATest] = [
-    next(t for t in SINGLE_TESTS if t["test_name"] == "test-external-api"),
-    combine_qa_tests("test-doclist-expand-and-sections", ["test-doclist-expand-collapse", "test-doclist-section-ops"]),
-    combine_qa_tests("test-doclist-duplicates-and-categories", ["test-doclist-duplicates", "test-doclist-category-ops"]),
-    combine_qa_tests("test-doclist-search-and-drag-drop", ["test-doclist-search", "test-doclist-drag-drop"]),
-    combine_qa_tests("test-pdf-viewer-and-export", ["test-pdf-viewer", "test-doclist-export"]),
+    next(t for t in SINGLE_TESTS if t["test_name"] == name)
+    for name in [
+        "test-external-api",
+        "test-doclist",
+        "test-pdf-viewer",
+    ]
+] + [
     combine_qa_tests("test-chat-and-versions", ["test-chat", "test-version-management"]),
-    next(t for t in SINGLE_TESTS if t["test_name"] == "test-doclist-batch-ops"),
     next(t for t in SINGLE_TESTS if t["test_name"] == "test-custom-reports"),
 ]
 
