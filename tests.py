@@ -65,8 +65,12 @@ def create_qa_test(test_name: str, user_prompt: str) -> QATest:
 # combined (see QA_TESTS at the bottom) so fewer cases are created in parallel.
 SINGLE_TESTS: list[QATest] = [
     create_qa_test(
-        test_name="test-external-api",
+        test_name="test-cases",
         user_prompt=f"""
+## Objective
+Test creating a case, uploading a document and archiving the case, first through the Sky External API and then through the app UI the way a user does it.
+
+## Part 1: External API
 You should test Sky External API: {{external_api_specs_url}}
 Take the bearer token from {{api_key_secret}} secret and use it to authenticate with the API.
 You need to:
@@ -78,6 +82,22 @@ You need to:
 - If the chat status is not "COMPLETE" after 10 minutes, abort and send a message to the user saying what went wrong.
 - After the chat status is "COMPLETE", archive the case using the API.
 - CHECK: You don't see the case in the list anymore.
+
+## Part 2: App UI
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+- Download {{sample_pdf_url}} to your machine.
+- Log in to the app and go to the "Cases" page. If a welcome screen or tour shows up, dismiss it ("Skip to Dashboard", "Skip Tour", "Skip for Now").
+- Click "+ Case". In the "Create Case" dialog enter the Case Name "QA UI Case <6 random digits>" and leave the other fields empty.
+- Click "Continue" (and "Continue" again on the document handling step, keeping "Automatic"; if a "Possible Duplicates" step appears, click "Create Case").
+- CHECK the dialog closes and the new case's page opens with its name as the title.
+- In the "Drag & drop documents, images, or audio files" area, click "Choose..." and upload the downloaded PDF.
+- CHECK the document appears in the case's file list.
+- Wait for processing (up to 10 minutes, checking every 30 seconds).
+- CHECK the document's status badge turns green ("Processed" on hover) and the "Launch Sky" button becomes enabled.
+- Click "Launch Sky".
+- CHECK the case workspace opens with the document in the doc list.
+- Go back to the case page, click the ⋮ ("More actions") button next to the case title, choose "Archive" and confirm with "Archive".
+- CHECK the app returns to the Cases list and the case is no longer listed.
         """,
     ),
     create_qa_test(
@@ -665,10 +685,10 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
         """,
     ),
     create_qa_test(
-        test_name="test-pdf-viewer",
+        test_name="test-case-workspace",
         user_prompt=f"""
 ## Objective
-Test the main PDF viewer flows: select a page, zoom, OCR text, rotate and delete a page.
+Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page), the Summary and Notes tabs, and sharing the case.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -700,6 +720,27 @@ Test the main PDF viewer flows: select a page, zoom, OCR text, rotate and delete
 - Select a page and click Delete in the bottom toolbar, then confirm.
 - CHECK a "Page deleted" toast appears and the page is removed. The toast disappears after about 5 seconds, so check for it immediately after confirming: right after the click, run `document.body.innerText.includes("Page deleted")` in the browser console (or take a screenshot within 2 seconds). Only fail this CHECK if the text never appears.
 - {CHECK_PERSISTENCE}
+
+## Summary Tab
+- Click a section in the doc list, then open the "Summary" tab in the right panel.
+- CHECK after a few seconds a summary appears under the section's name (in capitals) and it describes that section's document.
+- Click a page tile of that section.
+- CHECK the title changes to "<SECTION NAME> – PAGE <N>" and the summary changes to that page.
+
+## Notes Tab
+- Open the "Notes" tab and type "QA note <6 random digits>" in the editor.
+- Wait 5 seconds.
+- CHECK the status under the editor reads "Edited just now by …" (it may briefly show "Saving...").
+- Refresh the page and open the Notes tab again.
+- CHECK your note text is still there.
+
+## Share the Case
+- Click "Share" in the doc list header.
+- CHECK a "Guest Access" dialog opens.
+- Enter "qa+guest-<6 random digits>@example.com" and click "Create Link".
+- CHECK a card with that email and a share link (with a "Copy" button) appears.
+- Click the trash icon ("Revoke Access") on that guest.
+- CHECK the guest is removed from the dialog.
         """,
     ),
     create_qa_test(
@@ -885,9 +926,9 @@ and each check's 'part' is the test name of the part it belongs to.
 QA_TESTS: list[QATest] = [
     next(t for t in SINGLE_TESTS if t["test_name"] == name)
     for name in [
-        "test-external-api",
+        "test-cases",
         "test-doclist",
-        "test-pdf-viewer",
+        "test-case-workspace",
     ]
 ] + [
     combine_qa_tests("test-chat-and-versions", ["test-chat", "test-version-management"]),
