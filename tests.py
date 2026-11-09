@@ -895,7 +895,8 @@ Test the main custom report flow end to end: create a report template in Setting
   - "Case Overview" still contains "QA edit marker." (other sections are unchanged)
 
 ## Outdated Report after a Doc List Change
-- In the doc list on the left, move any section to a different category (section ⋮ menu → "Move To...").
+- In the doc list on the left, rename any section (section ⋮ menu → "Rename", type a new name ending in " QA", press Enter).
+  (Use a rename, not "Move To...": moving a section doesn't mark reports outdated yet.)
 - Go back to the Reports tab with TEMPLATE_NAME open.
 - CHECK:
   - A "Documents changed" banner with a "Rewrite" button appears
