@@ -819,6 +819,107 @@ The versions dropdown and the ⋮ actions button are on the case's files page.
   - No content leakage between versions
         """,
     ),
+    create_qa_test(
+        test_name="test-custom-reports",
+        user_prompt=f"""
+## Objective
+Test the main custom report flow end to end: create a report template in Settings, generate a report from it on a case, work with the report (sources, edit, section rewrite), make it outdated by changing the doc list and rewrite it, export it, then delete the template.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+{DOCLIST_TEST_SETUP}
+
+---
+
+## Rules for this test
+- Report templates are shared by the whole organization and other QA sessions may run at the same time. Pick a unique template name now: "QA Report " followed by 6 random digits (e.g. "QA Report 482913"), and use it everywhere below as TEMPLATE_NAME.
+- Only touch the template you created. Do not set any template as default, and do not edit or delete other templates.
+- Report generation takes a few minutes. When a step says to wait for the report, wait up to 10 minutes, checking every 30 seconds.
+- Cleanup: at the end, even if a CHECK failed or you aborted, delete TEMPLATE_NAME (see "Delete the Template"). If deleting fails, mention it in the summary.
+
+## Create a Report Template
+- Open Settings and click "Reports" in the settings menu (URL ends with /settings/reports).
+- Click "+ Template". CHECK a "Create Report Template" dialog opens at "Step 1 of 2".
+- Click "Continue" with the fields empty. CHECK the validation message "The name field can't be empty" appears and you stay on step 1.
+- Fill in:
+  - Template name: TEMPLATE_NAME
+  - Definition: "QA test template with two short sections"
+- Click "Continue". CHECK step 2 shows one empty section.
+- Fill in the first section:
+  - Title: "Case Overview"
+  - Purpose: "Summarize the case"
+  - Prompt (click "Click to add prompt" to open it): "In 3 to 5 sentences, summarize who the patient is, what happened, and the main injuries. Cite the source pages."
+- Click "+ Section" and fill in the second section:
+  - Title: "Treatment Summary"
+  - Purpose: "Summarize the treatment"
+  - Prompt: "List the main treatments and providers as a short bullet list. Cite the source pages."
+- Click "Save".
+- CHECK:
+  - The dialog closes
+  - A card named TEMPLATE_NAME appears in the template list with a "New" badge
+- Using the External API with the bearer token from {{api_key_secret}}: `GET /reports/templates`. CHECK the response includes a template named TEMPLATE_NAME.
+
+## Generate a Report
+- Go back to the case and click "Launch Sky".
+- Open the "Reports" tab in the right panel.
+- Open the report selector: the combobox at the top of the panel. It may say "Choose a Report or Template" or show another report's name. If a "Generated Reports" card list is shown, use the selector above it.
+- Type "QA Report" in "Search templates" and select TEMPLATE_NAME.
+- CHECK a "Generate Report" view appears with TEMPLATE_NAME as its title and a "Generate" button.
+- Click "Generate".
+- CHECK generation progress is shown (e.g. "Preparing your report" and/or "N of 2 sections ready" in the panel, or a "Generating 1 report" widget in the bottom-right corner).
+- Wait for the report to finish.
+- CHECK:
+  - The report shows two sections titled "Case Overview" and "Treatment Summary"
+  - Both sections have generated text about the John Doe case (not empty, no "Failed to generate this section" error)
+  - The text contains inline source citations (small reference chips)
+- Using the External API: `GET /cases/{{{{caseId}}}}/reports`. CHECK it includes a report for TEMPLATE_NAME.
+
+## Sources
+- In "Case Overview", click one inline source citation (if several are grouped behind a "Show N sources" button, open it and click one).
+- CHECK the document viewer jumps to the cited document page.
+
+## Edit a Section
+- Hover over "Case Overview" and click "Edit" (pencil icon) in the action bar.
+- CHECK the section turns into an inline editor (no modal) with "Cancel" and "Save Changes" buttons.
+- Add the sentence "QA edit marker." at the end of the section text and click "Save Changes".
+- CHECK the editor closes and the section shows "QA edit marker.".
+- Refresh the page and open TEMPLATE_NAME's report in the Reports tab again (via the selector or the "Generated Reports" cards). CHECK "QA edit marker." is still there.
+
+## Rewrite a Section
+- Hover over "Treatment Summary" and click "Rewrite".
+- CHECK the panel shows that the section is being rewritten (e.g. "Rewriting “Treatment Summary”").
+- Wait until it finishes.
+- CHECK:
+  - "Treatment Summary" shows regenerated text (not empty, no error)
+  - "Case Overview" still contains "QA edit marker." (other sections are unchanged)
+
+## Outdated Report after a Doc List Change
+- In the doc list on the left, move any section to a different category (section ⋮ menu → "Move To...").
+- Go back to the Reports tab with TEMPLATE_NAME open.
+- CHECK:
+  - A "Documents changed" banner with a "Rewrite" button appears
+  - The section-level "Rewrite" button is disabled while the report is outdated
+- Click "Rewrite" in the banner and wait for the report to finish.
+- CHECK:
+  - The "Documents changed" banner is gone
+  - Both sections have generated text again
+
+## Export
+- Click "Export" at the bottom of the report panel.
+- CHECK an "Export Report" dialog opens with an "Export as" format select (DOCX selected by default) and a checked "Show References" option.
+- Keep DOCX and click "Export".
+- CHECK an "Exporting Your Document" dialog appears, saying to check your email, with a file name ending in ".docx". Close it.
+  (The file is delivered by email; don't check the mailbox.)
+
+## Delete the Template
+- Go to Settings → Reports and find the TEMPLATE_NAME card.
+- Open its ⋮ menu ("More actions") and click "Delete".
+- CHECK a "Delete Template" confirmation dialog names TEMPLATE_NAME. Click "Delete".
+- CHECK the TEMPLATE_NAME card is gone from the list.
+- Using the External API: `GET /reports/templates`. CHECK TEMPLATE_NAME is no longer included.
+        """,
+    ),
 ]
 
 
@@ -864,7 +965,7 @@ and each check's 'part' is the test name of the part it belongs to.
     return create_qa_test(test_name, combined)
 
 
-# What runs by default: 7 sessions, 6 of them creating a John Doe case (was 11).
+# What runs by default: 8 sessions, 7 of them creating a John Doe case.
 QA_TESTS: list[QATest] = [
     next(t for t in SINGLE_TESTS if t["test_name"] == "test-external-api"),
     combine_qa_tests("test-doclist-expand-and-sections", ["test-doclist-expand-collapse", "test-doclist-section-ops"]),
@@ -873,6 +974,7 @@ QA_TESTS: list[QATest] = [
     combine_qa_tests("test-pdf-viewer-and-export", ["test-pdf-viewer", "test-doclist-export"]),
     combine_qa_tests("test-chat-and-versions", ["test-chat", "test-version-management"]),
     next(t for t in SINGLE_TESTS if t["test_name"] == "test-doclist-batch-ops"),
+    next(t for t in SINGLE_TESTS if t["test_name"] == "test-custom-reports"),
 ]
 
 # Every test that --tests can select by name.
