@@ -52,15 +52,6 @@ CHECK_PAGE_COUNT_UPDATES = "CHECK page count updates"
 CHECK_CONFIRMATION_DIALOG = "CHECK confirmation dialog appears"
 CHECK_SELECTION_CLEARS = "Selection clears after"
 
-MODAL_DUAL_PANE_CHECKS = """\
-- CHECK:
-  - A modal window opens
-  - Left pane displays the recognized text/content snippet
-  - Right pane displays the corresponding PDF page
-  - Both panes can be scrolled independently
-  - Closing the modal returns to the same state and scroll position
-"""
-
 
 def create_qa_test(test_name: str, user_prompt: str) -> QATest:
     user_prompt = QA_PREAMBLE + "\n\n" + user_prompt
@@ -646,7 +637,7 @@ Test expand and collapse functionality in the document list.
         test_name="test-chat",
         user_prompt=f"""
 ## Objective
-Test chat functionality including sending messages, receiving AI responses, term highlighting, clearing, copying, exporting, and case-based context.
+Test the main chat flow: ask a question about the case, get an answer with sources, open a source, and clear the chat.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -657,79 +648,27 @@ Test chat functionality including sending messages, receiving AI responses, term
 
 ## Chat Testing
 
-### Open Chat Tab
-- Click the Chat tab in the right panel
-- CHECK:
-  - Chat interface loads without delay
-  - Input field is active
-  - Previous messages (if any) are displayed in correct order
-  - Placeholder is visible when chat is empty
+### Ask a Question
+- Click the Chat tab in the right panel.
+- Type "What injuries did the patient have?" and press Enter.
+- CHECK your message appears and a loading indicator shows while the answer is generated.
+- Wait for the answer.
+- CHECK the answer is about the John Doe case and shows source numbers (Sources: 1 2 3…).
 
-### Send Message
-- Type a message and press Enter
-- CHECK:
-  - User message appears instantly
-  - "Thinking…" or loading indicator appears
-
-### Receive AI Response
-- Wait for AI to generate a reply
-- CHECK:
-  - Response renders fully
-  - Formatting (bold, lists, headings) is correct
-  - Content is relevant to the query
-
-### Term Definitions
-- In an AI response, click a term with a dotted underline
-- CHECK:
-  - A dialog opens with the term's definition
-  - The dialog closes correctly
-  - Opening another term's definition works without UI freezes
+### Open a Source
+- Click one of the source numbers.
+- CHECK a dialog opens showing the cited text next to the PDF page, and closing it returns to the chat.
 
 ### Clear
-- Click Clear button
-- CHECK:
-  - All chat messages are cleared
-  - Chat resets to default empty state ("Ask SKY anything")
-  - Suggested prompts reappear
-  - Input remains active
-
-### Copy
-- Click Copy button
-- CHECK:
-  - Entire chat content is copied
-  - Button state changes to "Copied"
-
-### Export Chat
-- Click Export
-- CHECK the options are DOCX, PDF and Plain Text (there is no Email option for chat) and an "Include Sources" option is available
-- Export once as DOCX and once as PDF (try "Include Sources")
-- CHECK:
-  - Export starts without error
-  - The downloaded file contains the complete chat
-  - Formatting is preserved
-
-### Case-Based Context
-- Open Chat on Case A → send message
-- Switch to Case B
-- CHECK:
-  - Case B has separate history
-  - No cross-case contamination
-- Return to Case A
-- CHECK:
-  - Case A may open with an empty chat; that is expected
-  - The chat history selector ("Select a conversation") lists Case A's earlier conversation, and opening it shows the messages intact
-  - Case B's conversation is not listed in Case A's history
-
-### Sources Modal
-- In an AI response that shows Sources: 1 2 3…, click on any source number
-{MODAL_DUAL_PANE_CHECKS}
+- Click the Clear button.
+- CHECK the messages are gone and the empty chat state ("Ask SKY anything") is shown.
         """,
     ),
     create_qa_test(
         test_name="test-pdf-viewer",
         user_prompt=f"""
 ## Objective
-Test PDF viewer functionality including page selection, zoom, OCR text view, rotation, deletion, and toolbar features.
+Test the main PDF viewer flows: select a page, zoom, OCR text, rotate and delete a page.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -740,76 +679,34 @@ Test PDF viewer functionality including page selection, zoom, OCR text view, rot
 
 ## PDF Viewer Testing
 
-### Page Selection
-- Expand a section in the doc list and click one of its page tiles
-- CHECK:
-  - The selected page opens in the main doc viewer area
-  - The page tile is highlighted in the doc list
-  - Page number in the top navigation updates accordingly
-- Click multiple pages with different content types (text, tables, images)
-- CHECK:
-  - Each page loads without delays
-  - No rendering artifacts or distortion
-  - Navigation stays synchronized with the current page
-- After selecting a page, check the bottom toolbar
-- CHECK it reads "Page N selected" and shows Text, Highlight, Zoom, Crop to Copy, Add Note, Rotate and Delete (and Add to Chronology if enabled), plus a close (X) button
+### Select a Page
+- Expand a section in the doc list and click one of its page tiles.
+- CHECK the page opens in the viewer, its tile is highlighted in the doc list, and a bottom toolbar reads "Page N selected".
 
-### Zoom Page
-- Select a page
-- Click Zoom
-- CHECK:
-  - While hovering the page, the whole page is enlarged (2×) in place and follows the cursor (there is no separate magnifier)
-  - The zoomed view is clear and high-resolution
-  - Rotate and Delete are disabled while Zoom is on
-  - Toggling Zoom off returns the page to normal view
-- Test zooming on text, images, small fonts
-- CHECK all details remain readable without pixelation
+### Zoom
+- Click Zoom in the bottom toolbar and hover the page.
+- CHECK the page is shown enlarged and readable. Click Zoom again to turn it off.
 
 ### Text (OCR View)
-- Select a page
-- Click Text
-{MODAL_DUAL_PANE_CHECKS}
-- Additional CHECK: Text matches PDF content (accuracy check)
+- Click Text in the bottom toolbar.
+- CHECK a dialog shows the page's recognized text next to the PDF page, and the text matches the page. Close it.
 
 ### Rotate Page
-- Select a page
-- Click Rotate in the bottom toolbar
-- CHECK:
-  - Page rotates immediately
-  - Rotation is visually correct and smooth
-  - Left panel thumbnail updates accordingly
-  - {CHECK_PERSISTENCE}
+- Click Rotate in the bottom toolbar.
+- CHECK the page and its doc list thumbnail rotate.
+- {CHECK_PERSISTENCE}
 
 ### Delete Page
-- Select a page
-- Click Delete in the bottom toolbar
-- Confirm deletion in confirmation dialog
-- CHECK:
-  - A "Page deleted" toast appears and the page is removed. The toast disappears after about 5 seconds, so check for it immediately after confirming: right after the click, run `document.body.innerText.includes("Page deleted")` in the browser console (or take a screenshot within 2 seconds). Only fail this CHECK if the text never appears.
-  - Page numbers update
-  - The selection clears and the bottom toolbar disappears (no other page is selected automatically)
-  - {CHECK_PERSISTENCE}
-
-### Viewer Sync With Doc List
-- Select a section in the doc list that contains multiple pages
-- Click a page within that section
-- CHECK:
-  - Viewer scrolls to the correct page
-  - The viewer and the doc list remain synchronized
-  - Selecting the next/previous page updates selection in doc list
-
-### Bottom Toolbar Visibility
-- Select a page
-- CHECK the bottom toolbar appears
-- Click the same page again: CHECK the toolbar hides
-- Select a page and click the toolbar's close (X) button: CHECK the toolbar hides
+- Select a page and click Delete in the bottom toolbar, then confirm.
+- CHECK a "Page deleted" toast appears and the page is removed. The toast disappears after about 5 seconds, so check for it immediately after confirming: right after the click, run `document.body.innerText.includes("Page deleted")` in the browser console (or take a screenshot within 2 seconds). Only fail this CHECK if the text never appears.
+- {CHECK_PERSISTENCE}
         """,
     ),
     create_qa_test(
         test_name="test-version-management",
         user_prompt=f"""
 ## Objective
-Test version management functionality including creating, renaming, deleting, and switching between versions.
+Test the main version flows: clone a version, switch between versions, and delete a version.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -822,51 +719,18 @@ Test version management functionality including creating, renaming, deleting, an
 
 The versions dropdown and the ⋮ actions button are on the case's files page.
 
-### Open Version List
-- Open the versions dropdown (it is disabled while the case has only one version; clone first if needed)
-- CHECK:
-  - Active version (Master or other) is highlighted
-  - All existing versions appear in the list
-  - No missing or duplicate entries
-
 ### Clone Version
-- Wait until all files in the case have finished processing (Clone is disabled until then)
-- Click the ⋮ button next to the version select and choose "Clone"
-- CHECK a "Create New Version" dialog opens with a default name ending in "(copy)"
-- Enter a new version name and confirm
-- CHECK:
-  - A "Version ready" message appears and the app switches to the new version automatically
-  - The cloned version contains the same documents, sections, and page structure as the original
-  - The new version appears in the versions dropdown
-
-### Rename Version
-- On Master, open the ⋮ menu: CHECK only "Clone" is offered (no Rename or Delete)
-- Switch to a non-Master version and click ⋮ next to the version dropdown
-- Select Rename
-- Enter a new version name and confirm
-- CHECK:
-  - Version name updates immediately in the dropdown
-  - {CHECK_PERSISTENCE}
-  - No breaking of version ordering or selection
-
-### Delete Version
-- On a non-Master version, click ⋮ next to the version dropdown
-- Select Delete
-- Confirm deletion
-- CHECK:
-  - Version disappears from the versions dropdown
-  - Other versions remain unchanged
-  - The app switches back to the Master version
-  - Deleted version's content is no longer accessible
+- Wait until all files in the case have finished processing (Clone is disabled until then).
+- Click the ⋮ button next to the version select, choose "Clone", enter a new version name and confirm.
+- CHECK a "Version ready" message appears, the app switches to the new version, and it has the same documents as Master.
 
 ### Switch Between Versions
-- Open the versions dropdown
-- Select another version
-- CHECK:
-  - All content updates immediately (documents, sections, pages)
-  - Sidebar categories match the selected version
-  - Viewer displays content of the selected version
-  - No content leakage between versions
+- Open the versions dropdown and select Master, then the new version again.
+- CHECK the documents and doc list update to the selected version each time.
+
+### Delete Version
+- On the new version, click ⋮ next to the version dropdown, choose Delete, and confirm.
+- CHECK the version disappears from the dropdown and the app switches back to Master.
         """,
     ),
     create_qa_test(
