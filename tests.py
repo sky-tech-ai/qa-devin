@@ -744,6 +744,46 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
         """,
     ),
     create_qa_test(
+        test_name="test-chronology",
+        user_prompt=f"""
+## Objective
+Test the main Chronology flows: see the case's events, open a source, edit and confirm an event, and add an event from the PDF viewer.
+
+## Login Instructions
+{DEVIN_QA_LOGIN_INSTRUCTIONS}
+
+{DOCLIST_TEST_SETUP}
+
+---
+
+## Chronology Testing
+The event list only renders rows that are on screen. To work with a specific event, type a distinctive word from it into the "Filter" box above the list instead of scrolling. Each row's ⋮ "Actions" button only appears while you hover the row.
+
+### Events
+- Open the "Chronology" tab in the right panel.
+- If a "Case Chronology" view with a "Generate" button is shown, click "Generate" and wait until the grey placeholder rows turn into events (up to 5 minutes, checking every 30 seconds).
+- CHECK the tab lists events, each with a date (undated ones are grouped under "Undated") and a page source badge.
+- Click the source badge of one event.
+- CHECK the document viewer opens that page.
+
+### Edit and Confirm an Event
+- Pick an event and filter the list to it. Hover it, click ⋮ "Actions" → "Edit".
+- CHECK an "Edit Event" dialog opens with the event's Detail filled in.
+- Add " QA edit" at the end of Detail and click "Save".
+- CHECK the row shows the new detail and an "Edited" badge.
+- Refresh the page, open the Chronology tab and filter to "QA edit" again.
+- CHECK the edit is still there.
+- Clear the filter, pick a different event that has no review badge, hover it and click ⋮ "Actions" → "Confirm".
+- CHECK that event now shows a "Confirmed" badge.
+
+### Add an Event from the Viewer
+- Select a page in the document viewer and click "Add to Chronology" in the bottom toolbar.
+- CHECK an "Add Event" dialog opens. Wait until "Pre-filling fields with AI…" is gone.
+- Set Detail to "QA added event", fill in a Date if it is empty, and click "Create".
+- CHECK the right panel switches to the Chronology tab and, after filtering to "QA added event", the event is listed with a "Manual" badge.
+        """,
+    ),
+    create_qa_test(
         test_name="test-version-management",
         user_prompt=f"""
 ## Objective
@@ -931,7 +971,10 @@ QA_TESTS: list[QATest] = [
         "test-case-workspace",
     ]
 ] + [
-    combine_qa_tests("test-chat-and-versions", ["test-chat", "test-version-management"]),
+    combine_qa_tests(
+        "test-chat-chronology-and-versions",
+        ["test-chat", "test-chronology", "test-version-management"],
+    ),
     next(t for t in SINGLE_TESTS if t["test_name"] == "test-custom-reports"),
 ]
 
