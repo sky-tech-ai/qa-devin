@@ -673,11 +673,11 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
 - Type "What injuries did the patient have?" and press Enter.
 - CHECK your message appears and a loading indicator shows while the answer is generated.
 - Wait for the answer.
-- CHECK the answer is about the John Doe case and shows source numbers (Sources: 1 2 3…).
+- CHECK the answer is about the John Doe case and contains inline source citations (small reference chips).
 
 ### Open a Source
-- Click one of the source numbers.
-- CHECK a dialog opens showing the cited text next to the PDF page, and closing it returns to the chat.
+- Click one of the citations (if several are grouped behind a "Show N sources" button, open it and click one).
+- CHECK the document viewer jumps to the cited page and highlights the cited text.
 
 ### Clear
 - Click the Clear button.
@@ -718,7 +718,7 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 
 ### Delete Page
 - Select a page and click Delete in the bottom toolbar, then confirm.
-- CHECK a "Page deleted" toast appears and the page is removed. The toast disappears after about 5 seconds, so check for it immediately after confirming: right after the click, run `document.body.innerText.includes("Page deleted")` in the browser console (or take a screenshot within 2 seconds). Only fail this CHECK if the text never appears.
+- CHECK the page is removed from the viewer and the doc list, and the section's page count drops by one.
 - {CHECK_PERSISTENCE}
 
 ## Summary Tab
