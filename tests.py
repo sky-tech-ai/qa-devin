@@ -800,9 +800,9 @@ Test the main version flows: clone a version, switch between versions, and delet
 
 The versions dropdown and the ⋮ actions button are on the case's files page.
 
-### Clone Version
-- Wait until all files in the case have finished processing (Clone is disabled until then).
-- Click the ⋮ button next to the version select, choose "Clone", enter a new version name and confirm.
+### Create a Version
+- Wait until all files in the case have finished processing (creating a version is disabled until then).
+- Click the ⋮ button next to the version select, choose "Create Version", enter a new version name and confirm.
 - CHECK a "Version ready" message appears, the app switches to the new version, and it has the same documents as Master.
 
 ### Switch Between Versions
