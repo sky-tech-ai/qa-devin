@@ -762,7 +762,7 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
         test_name="test-chronology",
         user_prompt=f"""
 ## Objective
-Test the main Chronology flows: see the case's events, open a source, edit and confirm an event, and add an event from the PDF viewer.
+Test the main Chronology flows: see the case's events, open a source, edit, confirm and reset an event, add an event from the PDF viewer, delete it, and export the chronology.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -796,6 +796,22 @@ The event list only renders rows that are on screen. To work with a specific eve
 - CHECK an "Add Event" dialog opens. Wait until "Pre-filling fields with AI…" is gone.
 - Set Detail to "QA added event", fill in a Date if it is empty, and click "Create".
 - CHECK the right panel switches to the Chronology tab and, after filtering to "QA added event", the event is listed with a "Manual" badge.
+
+### Reset an Edited Event
+- Before resetting, note a distinctive word from the original Detail of the event you edited (the text before " QA edit").
+- Filter to "QA edit". Hover the event and click ⋮ "Actions" → "Reset to Extracted" (it applies right away, no dialog).
+- CHECK the event no longer matches the "QA edit" filter.
+- Filter by the distinctive word you noted. CHECK the event is listed with its original detail and no "Edited" badge.
+
+### Delete an Event
+- Filter to "QA added event". Hover the event and click ⋮ "Actions" → "Delete".
+- CHECK a "Delete Event" confirmation dialog opens. Click "Delete".
+- CHECK the event is gone: filtering to "QA added event" shows no events.
+- Refresh the page, open the Chronology tab and filter to "QA added event" again. CHECK it is still gone.
+
+### Export
+- Clear the filter. Click "Export" in the Chronology tab's toolbar and choose "Export as DOCX".
+- CHECK a .docx file is downloaded (look in the browser's downloads or ~/Downloads).
         """,
     ),
     create_qa_test(
