@@ -68,7 +68,7 @@ SINGLE_TESTS: list[QATest] = [
         test_name="test-cases",
         user_prompt=f"""
 ## Objective
-Test creating a case, uploading a document and archiving the case, first through the Sky External API and then through the app UI the way a user does it.
+Test creating a case, uploading a document, finding the case with global search and archiving the case, first through the Sky External API and then through the app UI the way a user does it.
 
 ## Part 1: External API
 You should test Sky External API: {{external_api_specs_url}}
@@ -96,8 +96,23 @@ You need to:
 - CHECK the document's status badge turns green ("Processed" on hover) and the "Launch Sky" button becomes enabled.
 - Click "Launch Sky".
 - CHECK the case workspace opens with the document in the doc list.
+
+### Global search
+- Go to the "Cases" page. Click on an empty area of the page (not an input), then press Ctrl+K (Cmd+K on a Mac).
+- CHECK a search dialog opens with a focused "Search" input.
+- Type the full case name ("QA UI Case <your 6 digits>") and wait 2 seconds.
+- CHECK a "Cases" group lists exactly one result: your case, with the matched text highlighted and "1 file" in its details line.
+- Replace the text with "zzqa nomatch <your 6 digits>" and wait 2 seconds.
+- CHECK the dialog shows "No results found".
+- Press Escape. CHECK the search dialog closes.
+- Click the magnifying glass icon in the top header. Type the case name again and click your case in the results.
+- CHECK the case page opens in a new browser tab with the case name as the title. Close that tab and go back to the first tab.
+
+### Archive
 - Go back to the case page, click the ⋮ ("More actions") button next to the case title, choose "Archive" and confirm with "Archive".
 - CHECK the app returns to the Cases list and the case is no longer listed.
+- Press Ctrl+K and search for the full case name again (wait 2 seconds).
+- CHECK the dialog shows "No results found" (archived cases are not searchable). Press Escape.
         """,
     ),
     create_qa_test(
@@ -747,7 +762,7 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
         test_name="test-chronology",
         user_prompt=f"""
 ## Objective
-Test the main Chronology flows: see the case's events, open a source, edit and confirm an event, and add an event from the PDF viewer.
+Test the main Chronology flows: see the case's events, open a source, edit, confirm and reset an event, add an event from the PDF viewer, delete it, and export the chronology.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -781,6 +796,22 @@ The event list only renders rows that are on screen. To work with a specific eve
 - CHECK an "Add Event" dialog opens. Wait until "Pre-filling fields with AI…" is gone.
 - Set Detail to "QA added event", fill in a Date if it is empty, and click "Create".
 - CHECK the right panel switches to the Chronology tab and, after filtering to "QA added event", the event is listed with a "Manual" badge.
+
+### Reset an Edited Event
+- Before resetting, note a distinctive word from the original Detail of the event you edited (the text before " QA edit").
+- Filter to "QA edit". Hover the event and click ⋮ "Actions" → "Reset to Extracted" (it applies right away, no dialog).
+- CHECK the event no longer matches the "QA edit" filter.
+- Filter by the distinctive word you noted. CHECK the event is listed with its original detail and no "Edited" badge.
+
+### Delete an Event
+- Filter to "QA added event". Hover the event and click ⋮ "Actions" → "Delete".
+- CHECK a "Delete Event" confirmation dialog opens. Click "Delete".
+- CHECK the event is gone: filtering to "QA added event" shows no events.
+- Refresh the page, open the Chronology tab and filter to "QA added event" again. CHECK it is still gone.
+
+### Export
+- Clear the filter. Click "Export" in the Chronology tab's toolbar and choose "Export as DOCX".
+- CHECK a .docx file is downloaded (look in the browser's downloads or ~/Downloads).
         """,
     ),
     create_qa_test(
