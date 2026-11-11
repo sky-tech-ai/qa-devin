@@ -68,7 +68,7 @@ SINGLE_TESTS: list[QATest] = [
         test_name="test-cases",
         user_prompt=f"""
 ## Objective
-Test creating a case, uploading a document and archiving the case, first through the Sky External API and then through the app UI the way a user does it.
+Test creating a case, uploading a document, finding the case with global search and archiving the case, first through the Sky External API and then through the app UI the way a user does it.
 
 ## Part 1: External API
 You should test Sky External API: {{external_api_specs_url}}
@@ -96,8 +96,23 @@ You need to:
 - CHECK the document's status badge turns green ("Processed" on hover) and the "Launch Sky" button becomes enabled.
 - Click "Launch Sky".
 - CHECK the case workspace opens with the document in the doc list.
+
+### Global search
+- Go to the "Cases" page. Click on an empty area of the page (not an input), then press Ctrl+K (Cmd+K on a Mac).
+- CHECK a search dialog opens with a focused "Search" input.
+- Type the full case name ("QA UI Case <your 6 digits>") and wait 2 seconds.
+- CHECK a "Cases" group lists exactly one result: your case, with the matched text highlighted and "1 file" in its details line.
+- Replace the text with "zzqa nomatch <your 6 digits>" and wait 2 seconds.
+- CHECK the dialog shows "No results found".
+- Press Escape. CHECK the search dialog closes.
+- Click the magnifying glass icon in the top header. Type the case name again and click your case in the results.
+- CHECK the case page opens in a new browser tab with the case name as the title. Close that tab and go back to the first tab.
+
+### Archive
 - Go back to the case page, click the ⋮ ("More actions") button next to the case title, choose "Archive" and confirm with "Archive".
 - CHECK the app returns to the Cases list and the case is no longer listed.
+- Press Ctrl+K and search for the full case name again (wait 2 seconds).
+- CHECK the dialog shows "No results found" (archived cases are not searchable). Press Escape.
         """,
     ),
     create_qa_test(
