@@ -703,7 +703,7 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
         test_name="test-case-workspace",
         user_prompt=f"""
 ## Objective
-Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page), the Summary and Notes tabs, and sharing the case.
+Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -741,6 +741,12 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - CHECK after a few seconds a summary appears under the section's name (in capitals) and it describes that section's document.
 - Click a page tile of that section.
 - CHECK the title changes to "<SECTION NAME> – PAGE <N>" and the summary changes to that page.
+- Click the section again (so the section summary is shown). Hover the summary text and click "Rewrite" in the row that appears under it.
+- CHECK a spinner shows on "Rewrite", then a summary is shown again (not empty, no error message).
+- Hover the summary again and click "Format". Type "Rewrite as a bullet list" in "Formatting instructions (optional)" and click "Apply".
+- CHECK after it finishes the summary is shown as a bulleted list (no error message).
+- Click "Export" in the Summary tab's bottom toolbar and choose "Export as PDF".
+- CHECK a .pdf file is downloaded (look in the browser's downloads or ~/Downloads).
 
 ## Notes Tab
 - Open the "Notes" tab and type "QA note <6 random digits>" in the editor.
@@ -748,6 +754,8 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - CHECK the status under the editor reads "Edited just now by …" (it may briefly show "Saving...").
 - Refresh the page and open the Notes tab again.
 - CHECK your note text is still there.
+- Click "Export" in the Notes tab's bottom toolbar and choose "Export as DOCX".
+- CHECK a .docx file is downloaded.
 
 ## Share the Case
 - Click "Share" in the doc list header.
