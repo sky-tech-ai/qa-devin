@@ -703,7 +703,7 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
         test_name="test-case-workspace",
         user_prompt=f"""
 ## Objective
-Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page), the Summary and Notes tabs, and sharing the case.
+Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page, highlight text, crop, sticky notes), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -736,11 +736,38 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - CHECK the page is removed from the viewer and the doc list, and the section's page count drops by one.
 - {CHECK_PERSISTENCE}
 
+### Highlight (Text Snip)
+- Select a page that has printed text. Click "Highlight" in the bottom toolbar.
+- Drag across a line of text on the page (press at one corner, release at the opposite corner; if nothing happens, click one corner and then the opposite corner).
+- CHECK a "Text copied" toast appears with "Copied: …" showing text from that area.
+- Click "Highlight" again to turn it off.
+
+### Crop to Copy
+- Click "Crop to Copy" in the bottom toolbar, drag a rectangle over part of the page and release.
+- CHECK an "Image copied" toast appears (or "Image ready" with a "Download" button if the clipboard is not available).
+- Click "Crop to Copy" again to turn it off.
+
+### Sticky Note
+- Click "Add Note" in the bottom toolbar, then click an empty area of the page.
+- CHECK a note opens titled "Annotation - Page N" with a "Type a note..." field.
+- Type "QA sticky <6 random digits>" and click "Save and Close".
+- CHECK a note marker is shown on the page where you clicked.
+- Open the "Notes" tab in the right panel. CHECK a "Page Notes" list shows your note text.
+- Refresh the page. CHECK the marker is still on the page and the note is still in "Page Notes".
+- Click the note in "Page Notes" (or its marker on the page) to open it, then click the trash icon ("Delete Note").
+- CHECK the marker is gone from the page and the note is no longer in "Page Notes".
+
 ## Summary Tab
 - Click a section in the doc list, then open the "Summary" tab in the right panel.
 - CHECK after a few seconds a summary appears under the section's name (in capitals) and it describes that section's document.
 - Click a page tile of that section.
 - CHECK the title changes to "<SECTION NAME> – PAGE <N>" and the summary changes to that page.
+- Click the section again (so the section summary is shown). Hover the summary text and click "Rewrite" in the row that appears under it.
+- CHECK a spinner shows on "Rewrite", then a summary is shown again (not empty, no error message).
+- Hover the summary again and click "Format". Type "Rewrite as a bullet list" in "Formatting instructions (optional)" and click "Apply".
+- CHECK after it finishes the summary is shown as a bulleted list (no error message).
+- Click "Export" in the Summary tab's bottom toolbar and choose "Export as PDF".
+- CHECK a .pdf file is downloaded (look in the browser's downloads or ~/Downloads).
 
 ## Notes Tab
 - Open the "Notes" tab and type "QA note <6 random digits>" in the editor.
@@ -748,6 +775,8 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - CHECK the status under the editor reads "Edited just now by …" (it may briefly show "Saving...").
 - Refresh the page and open the Notes tab again.
 - CHECK your note text is still there.
+- Click "Export" in the Notes tab's bottom toolbar and choose "Export as DOCX".
+- CHECK a .docx file is downloaded.
 
 ## Share the Case
 - Click "Share" in the doc list header.
@@ -849,7 +878,7 @@ The versions dropdown and the ⋮ actions button are on the case's files page.
         test_name="test-custom-reports",
         user_prompt=f"""
 ## Objective
-Test the main custom report flow end to end: create a report template in Settings, generate a report from it on a case, work with the report (sources, edit, section rewrite), make it outdated by changing the doc list and rewrite it, export it, then delete the template.
+Test the main custom report flow end to end: create a report template in Settings, generate a report from it on a case, work with the report (sources, edit, section rewrite), make it outdated by changing the doc list and rewrite it, export it, then edit, duplicate, export and re-import the template, and delete the templates.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -862,7 +891,7 @@ Test the main custom report flow end to end: create a report template in Setting
 - Report templates are shared by the whole organization and other QA sessions may run at the same time. Pick a unique template name now: "QA Report " followed by 6 random digits (e.g. "QA Report 482913"), and use it everywhere below as TEMPLATE_NAME.
 - Only touch the template you created. Do not set any template as default, and do not edit or delete other templates.
 - Report generation takes a few minutes. When a step says to wait for the report, wait up to 10 minutes, checking every 30 seconds.
-- Cleanup: at the end, even if a CHECK failed or you aborted, delete TEMPLATE_NAME (see "Delete the Template"). If deleting fails, mention it in the summary.
+- Cleanup: at the end, even if a CHECK failed or you aborted, delete every template whose name starts with TEMPLATE_NAME (TEMPLATE_NAME itself, "TEMPLATE_NAME Copy" and "TEMPLATE_NAME Imported", whichever exist; see "Delete the Template"). If deleting fails, mention it in the summary.
 
 ## Create a Report Template
 - Open Settings and click "Reports" in the settings menu (URL ends with /settings/reports).
@@ -937,6 +966,28 @@ Test the main custom report flow end to end: create a report template in Setting
 - Keep DOCX and click "Export".
 - CHECK an "Exporting Your Document" dialog appears, saying to check your email, with a file name ending in ".docx". Close it.
   (The file is delivered by email; don't check the mailbox.)
+
+## Manage the Template
+Go to Settings → Reports and find the TEMPLATE_NAME card. Each card has a ⋮ menu ("More actions").
+
+### Edit
+- ⋮ → "Edit Manually". CHECK an "Edit Report Template" dialog opens at "Step 1 of 2" with TEMPLATE_NAME and its definition filled in.
+- Add " (edited)" at the end of Definition and click "Continue". CHECK step 2 shows the "Case Overview" and "Treatment Summary" sections.
+- Change the title "Treatment Summary" to "Treatment Overview" and click "Save". CHECK the dialog closes.
+- Open ⋮ → "Edit Manually" again. CHECK the definition ends with " (edited)", and after "Continue" the second section is titled "Treatment Overview". Click "Cancel".
+
+### Duplicate
+- ⋮ → "Duplicate". CHECK a card named "TEMPLATE_NAME Copy" appears.
+- On "TEMPLATE_NAME Copy": ⋮ → "Delete", confirm. CHECK that card is gone and TEMPLATE_NAME is still listed.
+
+### Export and Import JSON
+- On TEMPLATE_NAME: ⋮ → "Export". CHECK a "Template exported" toast appears and a .json file is downloaded (spaces in the name become "_", e.g. "QA_Report_482913.json").
+- Open the file. CHECK it has "name": TEMPLATE_NAME, the edited definition, and two sections titled "Case Overview" and "Treatment Overview".
+- Click "Import" at the top of the template list → "Import from JSON" and choose that file.
+- CHECK a "Template already exists" toast appears and no new card is added.
+- Copy the file to "qa-import.json" and change its "name" value to "TEMPLATE_NAME Imported" (keep everything else). Import "qa-import.json" the same way.
+- CHECK a card named "TEMPLATE_NAME Imported" appears.
+- On "TEMPLATE_NAME Imported": ⋮ → "Delete", confirm. CHECK that card is gone.
 
 ## Delete the Template
 - Go to Settings → Reports and find the TEMPLATE_NAME card.
