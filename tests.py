@@ -857,7 +857,7 @@ The versions dropdown and the ⋮ actions button are on the case's files page.
         test_name="test-custom-reports",
         user_prompt=f"""
 ## Objective
-Test the main custom report flow end to end: create a report template in Settings, generate a report from it on a case, work with the report (sources, edit, section rewrite), make it outdated by changing the doc list and rewrite it, export it, then delete the template.
+Test the main custom report flow end to end: create a report template in Settings, generate a report from it on a case, work with the report (sources, edit, section rewrite), make it outdated by changing the doc list and rewrite it, export it, then edit, duplicate, export and re-import the template, and delete the templates.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -870,7 +870,7 @@ Test the main custom report flow end to end: create a report template in Setting
 - Report templates are shared by the whole organization and other QA sessions may run at the same time. Pick a unique template name now: "QA Report " followed by 6 random digits (e.g. "QA Report 482913"), and use it everywhere below as TEMPLATE_NAME.
 - Only touch the template you created. Do not set any template as default, and do not edit or delete other templates.
 - Report generation takes a few minutes. When a step says to wait for the report, wait up to 10 minutes, checking every 30 seconds.
-- Cleanup: at the end, even if a CHECK failed or you aborted, delete TEMPLATE_NAME (see "Delete the Template"). If deleting fails, mention it in the summary.
+- Cleanup: at the end, even if a CHECK failed or you aborted, delete every template whose name starts with TEMPLATE_NAME (TEMPLATE_NAME itself, "TEMPLATE_NAME Copy" and "TEMPLATE_NAME Imported", whichever exist; see "Delete the Template"). If deleting fails, mention it in the summary.
 
 ## Create a Report Template
 - Open Settings and click "Reports" in the settings menu (URL ends with /settings/reports).
@@ -945,6 +945,28 @@ Test the main custom report flow end to end: create a report template in Setting
 - Keep DOCX and click "Export".
 - CHECK an "Exporting Your Document" dialog appears, saying to check your email, with a file name ending in ".docx". Close it.
   (The file is delivered by email; don't check the mailbox.)
+
+## Manage the Template
+Go to Settings → Reports and find the TEMPLATE_NAME card. Each card has a ⋮ menu ("More actions").
+
+### Edit
+- ⋮ → "Edit Manually". CHECK an "Edit Report Template" dialog opens at "Step 1 of 2" with TEMPLATE_NAME and its definition filled in.
+- Add " (edited)" at the end of Definition and click "Continue". CHECK step 2 shows the "Case Overview" and "Treatment Summary" sections.
+- Change the title "Treatment Summary" to "Treatment Overview" and click "Save". CHECK the dialog closes.
+- Open ⋮ → "Edit Manually" again. CHECK the definition ends with " (edited)", and after "Continue" the second section is titled "Treatment Overview". Click "Cancel".
+
+### Duplicate
+- ⋮ → "Duplicate". CHECK a card named "TEMPLATE_NAME Copy" appears.
+- On "TEMPLATE_NAME Copy": ⋮ → "Delete", confirm. CHECK that card is gone and TEMPLATE_NAME is still listed.
+
+### Export and Import JSON
+- On TEMPLATE_NAME: ⋮ → "Export". CHECK a "Template exported" toast appears and a .json file is downloaded (spaces in the name become "_", e.g. "QA_Report_482913.json").
+- Open the file. CHECK it has "name": TEMPLATE_NAME, the edited definition, and two sections titled "Case Overview" and "Treatment Overview".
+- Click "Import" at the top of the template list → "Import from JSON" and choose that file.
+- CHECK a "Template already exists" toast appears and no new card is added.
+- Copy the file to "qa-import.json" and change its "name" value to "TEMPLATE_NAME Imported" (keep everything else). Import "qa-import.json" the same way.
+- CHECK a card named "TEMPLATE_NAME Imported" appears.
+- On "TEMPLATE_NAME Imported": ⋮ → "Delete", confirm. CHECK that card is gone.
 
 ## Delete the Template
 - Go to Settings → Reports and find the TEMPLATE_NAME card.
