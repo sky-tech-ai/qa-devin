@@ -703,7 +703,7 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
         test_name="test-case-workspace",
         user_prompt=f"""
 ## Objective
-Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
+Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page, highlight text, crop, sticky notes), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -735,6 +735,27 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - Select a page and click Delete in the bottom toolbar, then confirm.
 - CHECK the page is removed from the viewer and the doc list, and the section's page count drops by one.
 - {CHECK_PERSISTENCE}
+
+### Highlight (Text Snip)
+- Select a page that has printed text. Click "Highlight" in the bottom toolbar.
+- Drag across a line of text on the page (press at one corner, release at the opposite corner; if nothing happens, click one corner and then the opposite corner).
+- CHECK a "Text copied" toast appears with "Copied: …" showing text from that area.
+- Click "Highlight" again to turn it off.
+
+### Crop to Copy
+- Click "Crop to Copy" in the bottom toolbar, drag a rectangle over part of the page and release.
+- CHECK an "Image copied" toast appears (or "Image ready" with a "Download" button if the clipboard is not available).
+- Click "Crop to Copy" again to turn it off.
+
+### Sticky Note
+- Click "Add Note" in the bottom toolbar, then click an empty area of the page.
+- CHECK a note opens titled "Annotation - Page N" with a "Type a note..." field.
+- Type "QA sticky <6 random digits>" and click "Save and Close".
+- CHECK a note marker is shown on the page where you clicked.
+- Open the "Notes" tab in the right panel. CHECK a "Page Notes" list shows your note text.
+- Refresh the page. CHECK the marker is still on the page and the note is still in "Page Notes".
+- Click the note in "Page Notes" (or its marker on the page) to open it, then click the trash icon ("Delete Note").
+- CHECK the marker is gone from the page and the note is no longer in "Page Notes".
 
 ## Summary Tab
 - Click a section in the doc list, then open the "Summary" tab in the right panel.
