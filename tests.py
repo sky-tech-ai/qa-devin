@@ -87,15 +87,28 @@ You need to:
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
 - Download {{sample_pdf_url}} to your machine.
 - Log in to the app and go to the "Cases" page. If a welcome screen or tour shows up, dismiss it ("Skip to Dashboard", "Skip Tour", "Skip for Now").
-- Click "+ Case". In the "Create Case" dialog enter the Case Name "QA UI Case <6 random digits>" and leave the other fields empty.
+- Click "+ Case". In the "Create Case" dialog enter the Case Name "QA UI Case <6 random digits>" and leave the other fields empty, except Referencing below.
+- Turn the "Referencing" switch on (if it is off). If a "Reference Prefix (Optional)" field appears, leave it empty.
+- CHECK a "Preview" shows an example reference number (e.g. "QAUI-000001"). Note it as PREVIEW_NUMBER.
 - Click "Continue" (and "Continue" again on the document handling step, keeping "Automatic"; if a "Possible Duplicates" step appears, click "Create Case").
 - CHECK the dialog closes and the new case's page opens with its name as the title.
 - In the "Drag & drop documents, images, or audio files" area, click "Choose..." and upload the downloaded PDF.
 - CHECK the document appears in the case's file list.
 - Wait for processing (up to 10 minutes, checking every 30 seconds).
 - CHECK the document's status badge turns green ("Processed" on hover) and the "Launch Sky" button becomes enabled.
+
+### Referencing (Bates numbering)
+From here to the end of the test, this overrides the "abort" rule above: if a CHECK fails, record it and continue with the next step. Only abort if the app is unusable.
+- CHECK a banner says "1 of 1 file still needs a referencing decision" with "Apply All" and "Skip All" buttons.
+- Click "Apply All". CHECK an "Apply Reference Numbers?" dialog says it will stamp 1 document and that stamping is permanent. Click "Apply Referencing".
+- CHECK the file's "Ref #" column shows "Stamping", then (within 5 minutes, checking every 30 seconds) a reference number with the same prefix and format as PREVIEW_NUMBER, and the banner is gone. Note the number as REF_NUMBER.
 - Click "Launch Sky".
 - CHECK the case workspace opens with the document in the doc list.
+- Open the document's first page in the viewer. CHECK REF_NUMBER is stamped on the page image (usually near a corner).
+- Go back to the case page. Open the file's ⋮ actions menu and choose "Remove Referencing".
+- CHECK a "Remove Reference Numbers?" dialog appears. Click "Remove Referencing".
+- CHECK "Ref #" shows "Removing", then (within 5 minutes) the number is gone and the "1 of 1 file still needs a referencing decision" banner is back.
+- Click "Skip All". CHECK "Ref #" shows "Skipped" and the banner is gone.
 
 ### Global search
 - Go to the "Cases" page. Click on an empty area of the page (not an input), then press Ctrl+K (Cmd+K on a Mac).
@@ -116,7 +129,6 @@ You need to:
 
 ## Part 3: Settings and Billing
 Open Settings from the avatar menu in the top-right corner ("Settings"). Rules for this part:
-- From here on (Parts 3 and 4) this overrides the "abort" rule above: if a CHECK fails, record it and continue with the next step. Only abort if the app is unusable.
 - Settings are shared with other QA sessions running at the same time. Only make the changes listed below, and undo each one in the same step.
 - On the Billing page never click a plan button ("Choose Pro", "Get Premium", "Downgrade", "Continue with Flex", "Confirm Upgrade") or "Open Billing Portal". They change the real subscription.
 - Do not change Language, Organization, Referencing or Knowledge settings.
