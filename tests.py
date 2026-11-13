@@ -168,7 +168,7 @@ Do this part last: it logs you out.
 - Click "Log In" with both fields empty. CHECK the form shows "Email should be example@site.com" and "Please enter the password", and you stay on the page.
 - Enter the QA user's email with the password "wrong-password-QA-1" and click "Log In". CHECK "Email or password incorrect" is shown and you stay on the page.
 - Click "Forgot password?". CHECK a "Reset Password" page asks for "Email". Enter the QA user's email and click "Reset Password".
-- CHECK the page says "We've emailed <email> with a password reset link." (This doesn't change the password. Don't open the email.) Click "Log In".
+- CHECK the page confirms a password reset link was emailed to that address ("We've emailed <email> …" or "If an account exists for <email>, we've emailed …"). (This doesn't change the password. Don't open the email.) Click "Log In".
 - Click "Create Account". Click "Continue" without filling anything in.
 - CHECK the form shows field errors (e.g. "This field cannot be empty" / "Email should be example@site.com") and "You must agree to the Terms and Conditions and Privacy Policy". Do not submit the form.
 - Go back to the login page and log in with the correct email and password.
