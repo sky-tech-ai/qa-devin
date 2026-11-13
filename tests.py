@@ -116,6 +116,7 @@ You need to:
 
 ## Part 3: Settings and Billing
 Open Settings from the avatar menu in the top-right corner ("Settings"). Rules for this part:
+- From here on (Parts 3 and 4) this overrides the "abort" rule above: if a CHECK fails, record it and continue with the next step. Only abort if the app is unusable.
 - Settings are shared with other QA sessions running at the same time. Only make the changes listed below, and undo each one in the same step.
 - On the Billing page never click a plan button ("Choose Pro", "Get Premium", "Downgrade", "Continue with Flex", "Confirm Upgrade") or "Open Billing Portal". They change the real subscription.
 - Do not change Language, Organization, Referencing or Knowledge settings.
@@ -129,7 +130,9 @@ Open Settings from the avatar menu in the top-right corner ("Settings"). Rules f
 - CHECK the button shows "Saved". Refresh the page. CHECK the name still ends with " QA".
 - Put the original name back and click "Save". CHECK it shows "Saved" with the original name.
 - Under "Theme (Beta)", note which of "Light" / "Dark" / "System" is selected, then click "Dark".
-- CHECK a "Theme updated" toast appears and the app switches to a dark background. Click the originally selected option again and CHECK the app goes back to how it looked.
+- CHECK the app switches to a dark background (a "Theme updated" toast shows for only 2 seconds; don't wait for it).
+- Refresh the page. CHECK it is still dark.
+- Click the originally selected option again. CHECK the app goes back to how it looked before.
 
 ### Team
 - On "Team" ("Members" tab), click "Invite". Enter Email "qa+invite-<6 random digits>@example.com", Name "QA Invite", keep Role "Member" and click "Invite".
@@ -148,7 +151,7 @@ Open Settings from the avatar menu in the top-right corner ("Settings"). Rules f
 - CHECK the key is listed with its name and an "Active" badge.
 - Using the External API with that new key as the bearer token: `GET /cases`. CHECK it returns 200.
 - On the key: "More actions" → "Delete". CHECK a "Delete API Key" dialog appears. Click "Delete".
-- CHECK an "API key deleted successfully" toast and the key is gone from the list.
+- CHECK the key is gone from the list (an "API key deleted successfully" toast may show briefly).
 - Call `GET /cases` with the deleted key again. CHECK it is rejected (401 or 403).
 
 ### Archive
