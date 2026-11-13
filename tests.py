@@ -68,7 +68,7 @@ SINGLE_TESTS: list[QATest] = [
         test_name="test-cases",
         user_prompt=f"""
 ## Objective
-Test creating a case, uploading a document, finding the case with global search and archiving the case, first through the Sky External API and then through the app UI the way a user does it.
+Test creating a case, uploading a document, finding the case with global search and archiving the case, first through the Sky External API and then through the app UI the way a user does it. Then test the Settings and Billing pages, and finally the login, logout, password reset and registration forms.
 
 ## Part 1: External API
 You should test Sky External API: {{external_api_specs_url}}
@@ -113,6 +113,69 @@ You need to:
 - CHECK the app returns to the Cases list and the case is no longer listed.
 - Press Ctrl+K and search for the full case name again (wait 2 seconds).
 - CHECK the dialog shows "No results found" (archived cases are not searchable). Press Escape.
+
+## Part 3: Settings and Billing
+Open Settings from the avatar menu in the top-right corner ("Settings"). Rules for this part:
+- From here on (Parts 3 and 4) this overrides the "abort" rule above: if a CHECK fails, record it and continue with the next step. Only abort if the app is unusable.
+- Settings are shared with other QA sessions running at the same time. Only make the changes listed below, and undo each one in the same step.
+- On the Billing page never click a plan button ("Choose Pro", "Get Premium", "Downgrade", "Continue with Flex", "Confirm Upgrade") or "Open Billing Portal". They change the real subscription.
+- Do not change Language, Organization, Referencing or Knowledge settings.
+
+### Navigation
+- CHECK the settings menu shows "Account", "Appearance", "Organization", "Team", "Categories", "Knowledge", "Reports", "Referencing", "Billing", "Analytics", "Developers" and "Archive". If some are missing, list them in the details (the QA user may not be an Admin).
+- Click each of those menu items once. CHECK every page opens with its heading and no error message.
+
+### Account
+- On "Account", note the current "Full Name". Append " QA" to it and click "Save".
+- CHECK the button shows "Saved". Refresh the page. CHECK the name still ends with " QA".
+- Put the original name back and click "Save". CHECK it shows "Saved" with the original name.
+- Under "Theme (Beta)", note which of "Light" / "Dark" / "System" is selected, then click "Dark".
+- CHECK the app switches to a dark background (a "Theme updated" toast shows for only 2 seconds; don't wait for it).
+- Refresh the page. CHECK it is still dark.
+- Click the originally selected option again. CHECK the app goes back to how it looked before.
+
+### Team
+- On "Team" ("Members" tab), click "Invite". Enter Email "qa+invite-<6 random digits>@example.com", Name "QA Invite", keep Role "Member" and click "Invite".
+- CHECK a "Success" step says "The invitation was successfully sent." Click "Close".
+- CHECK the members list shows that email with "Invitation sent".
+- Click the X on that row. CHECK a "Cancel Invite" dialog names the email. Click "Cancel" (the red button).
+- CHECK the invite is no longer in the list.
+
+### Categories
+- On "Categories", CHECK category cards are listed.
+- Click "Category". CHECK a "Create Category" dialog opens at "Step 1 of 4" with "Category Name" and "Definition". Click "Cancel" (do not create a category: categories affect document classification for every case).
+
+### API Keys
+- On "Developers", click "API Key". Enter "QA Key <6 random digits>" as "API Key Name" and click "Create".
+- CHECK a "Your API Key" view shows the full key with the warning "Please copy this key now. You won't be able to see it again." Copy the key, then click "Close".
+- CHECK the key is listed with its name and an "Active" badge.
+- Using the External API with that new key as the bearer token: `GET /cases`. CHECK it returns 200.
+- On the key: "More actions" → "Delete". CHECK a "Delete API Key" dialog appears. Click "Delete".
+- CHECK the key is gone from the list (an "API key deleted successfully" toast may show briefly).
+- Call `GET /cases` with the deleted key again. CHECK it is rejected (401 or 403).
+
+### Archive
+- On "Archive" ("Cases" tab), CHECK the "QA UI Case <your 6 digits>" case you archived in Part 2 is listed, with an "Archived Date" and "Archived by".
+- Hover its row and click "Restore", then "Restore" in the "Restore Case" dialog.
+- CHECK the case is gone from the Archive list and shows up again on the "Cases" page.
+- Archive it again (case page → ⋮ "More actions" → "Archive" → "Archive"). CHECK it is no longer on the Cases page.
+
+### Billing
+- On "Billing", CHECK the page shows "Manage your subscription, billing, and track usage" and usage counters "Pages Processed", "Cases Created" and "Documents Uploaded" with numbers.
+- If plan cards ("Flex" / "Pro" / "Premium") are shown, CHECK exactly one has a "Current" badge. Do not click any plan button.
+
+## Part 4: Login, Logout and Account Forms
+Do this part last: it logs you out.
+- Click the avatar in the top-right corner and choose "Log Out".
+- CHECK you land on the "Login" page.
+- Click "Log In" with both fields empty. CHECK the form shows "Email should be example@site.com" and "Please enter the password", and you stay on the page.
+- Enter the QA user's email with the password "wrong-password-QA-1" and click "Log In". CHECK "Email or password incorrect" is shown and you stay on the page.
+- Click "Forgot password?". CHECK a "Reset Password" page asks for "Email". Enter the QA user's email and click "Reset Password".
+- CHECK the page confirms a password reset link was emailed to that address ("We've emailed <email> …" or "If an account exists for <email>, we've emailed …"). (This doesn't change the password. Don't open the email.) Click "Log In".
+- Click "Create Account". Click "Continue" without filling anything in.
+- CHECK the form shows field errors (e.g. "This field cannot be empty" / "Email should be example@site.com") and "You must agree to the Terms and Conditions and Privacy Policy". Do not submit the form.
+- Go back to the login page and log in with the correct email and password.
+- CHECK you land on the app's "Cases" page.
         """,
     ),
     create_qa_test(
