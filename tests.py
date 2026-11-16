@@ -769,6 +769,18 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
 - Click one of the citations (if several are grouped behind a "Show N sources" button, open it and click one).
 - CHECK the document viewer jumps to the cited page and highlights the cited text.
 
+### Copy and Export
+- Hover the answer and click its "Copy" button. CHECK the button briefly changes to "Copied".
+- Click "Export" in the chat's bottom toolbar. CHECK an "Export Chat" dialog opens with an "Export as" format select and an "Include Sources" option.
+- Keep the default format, turn "Include Sources" on and click "Export". CHECK a file is downloaded (look in the browser's downloads or ~/Downloads).
+
+### New Chat and History
+- Open the conversation selector at the top of the Chat tab (it shows the current chat's title or "Select a conversation") and choose "New Chat".
+- CHECK the empty chat state ("Ask SKY anything") is shown.
+- Ask "What treatments did the patient receive?" and wait for the answer. CHECK it answers about treatments.
+- Open the conversation selector again. CHECK the "Chat Sessions" list shows both chats, each with a message count (e.g. "2 msgs").
+- Select the first chat. CHECK its messages (the injuries question and answer) are shown again.
+
 ### Clear
 - Click the Clear button.
 - CHECK the messages are gone and the empty chat state ("Ask SKY anything") is shown.
@@ -944,9 +956,23 @@ The versions dropdown and the ⋮ actions button are on the case's files page.
 - Open the versions dropdown and select Master, then the new version again.
 - CHECK the documents and doc list update to the selected version each time.
 
+### Archive a Document and Add It Back
+- On the new version, open one file's ⋮ actions menu and choose "Archive".
+- CHECK an "Archive Document" dialog names the file. Click "Archive".
+- CHECK the file is gone from the new version's file list. Note its name as ARCHIVED_FILE.
+- Switch to Master. CHECK ARCHIVED_FILE is still listed there.
+- Select ARCHIVED_FILE's checkbox and click "Add to Version". In the dialog choose the new version under "Select version" and click "Send Files".
+- CHECK "Adding to Version..." is shown, then "Version ready", and the app switches to the new version with ARCHIVED_FILE listed again.
+
 ### Delete Version
 - On the new version, click ⋮ next to the version dropdown, choose Delete, and confirm.
 - CHECK the version disappears from the dropdown and the app switches back to Master.
+
+### Edit the Case
+- Click the ⋮ ("More actions") button next to the case title and choose "Edit".
+- CHECK an "Edit Case" dialog opens with the case name filled in.
+- Append " QA" to the case name and save (click "Continue" if shown, then "Edit" or "Save").
+- CHECK the case title now ends with " QA". Refresh the page. CHECK it still does.
         """,
     ),
     create_qa_test(
