@@ -194,7 +194,7 @@ Do this part last: it logs you out.
         test_name="test-doclist",
         user_prompt=f"""
 ## Objective
-Test the main document list flows: organize sections and categories, find sections, rotate a section, extract and delete selected pages, review an AI category definition, and export the doc list.
+Test the main document list flows: organize sections and categories, find sections, rotate a section, extract (move) and delete selected pages, review an AI category definition, and export the doc list.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -243,9 +243,9 @@ Each section row and category header has a ⋮ actions menu. Do the steps in ord
 ### Work with Several Pages
 - Expand a section with at least 4 pages. Click its first page tile, then Ctrl+click (Cmd+click on a Mac) its second and third page tiles.
 - CHECK a bar shows "3 selected" with "Extract", "Rotate" and "Delete".
-- Click "Extract". CHECK an "Extract to New Document" dialog says it will create a document from 3 selected pages, with "Document Name", "Category" and "Operation Mode" ("Move" / "Copy").
-- Enter "QA Extracted <6 random digits>", keep the suggested category, choose "Move" and click "Create Document".
-- CHECK a new section with that name and 3 pages appears, and the source section has 3 fewer pages.
+- Click "Extract". CHECK an "Extract to New Document" dialog says it will create a document from 3 selected pages, with "Document Name" and "Category" fields.
+- Enter "QA Extracted <6 random digits>", choose the source section's category under "Category" (it starts empty and is required), and click "Create Document".
+- CHECK a new section with that name and 3 pages appears, and the source section has 3 fewer pages (Extract moves the pages; it does not copy them).
 - In the new section, click one page tile and Ctrl+click a second one, then click "Delete" in the bar.
 - CHECK a "Delete Pages" dialog asks to delete 2 pages. Click "Delete 2 Pages".
 - CHECK the new section now has 1 page. Refresh the page. CHECK the new section (1 page) and the source section's reduced page count are unchanged.
