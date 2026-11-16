@@ -98,6 +98,18 @@ class DevinAPIClient:
                     return None
                 return response_data
 
+    async def terminate_session(self, session_id: str) -> bool:
+        """Stop a session for good (DELETE /v1/sessions/{id}).
+
+        Returns False if Devin refuses, e.g. the session already ended.
+        """
+        async with aiohttp.ClientSession() as session:
+            async with session.delete(
+                f"{self.base_url}/sessions/{session_id}",
+                headers=self.headers,
+            ) as response:
+                return response.status == 200
+
 
 async def main():
     api_key = os.getenv("DEVIN_API_KEY")
