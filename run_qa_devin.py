@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import signal
 import json
 import os
 import sys
@@ -40,6 +41,10 @@ class QATestResult(TypedDict, total=False):
 
 MAX_TIME_PER_TEST = 75 * 60  # 75 minutes; test-custom-reports alone takes ~50
 PROGRESS_INTERVAL = int(os.getenv("QA_PROGRESS_MINUTES", "1")) * 60
+# How long to wait for Devin to confirm terminations when a run is cancelled.
+# GitHub sends SIGINT, then SIGTERM about 7.5 s later, then kills the process.
+TERMINATE_TIMEOUT = 5
+
 # Devin statuses after which the session won't do more work on its own.
 DONE_STATUSES = {"blocked", "stopped", "finished", "expired"}
 
@@ -292,8 +297,83 @@ async def run_tests_and_send_to_slack(
     environment: str = "dev",
 ) -> list[QATestResult]:
     run_start = time.time()
-    eval_tasks = []
+    eval_tasks: list[asyncio.Task] = []
     session_links: list[tuple[str, str, str]] = []
+    try:
+        return await _run_sessions(
+            url,
+            test_names,
+            external_api_specs_url,
+            sample_pdf_url,
+            johndoejunior_zip_url,
+            environment,
+            run_start,
+            eval_tasks,
+            session_links,
+        )
+    except asyncio.CancelledError:
+        await terminate_unfinished_sessions(eval_tasks, session_links, environment)
+        raise
+
+
+async def terminate_unfinished_sessions(
+    eval_tasks: list[asyncio.Task],
+    session_links: list[tuple[str, str, str]],
+    environment: str,
+) -> None:
+    """Stop the Devin sessions of tests that haven't finished.
+
+    A cancelled GitHub run otherwise leaves its sessions running, and paid for,
+    until they end on their own.
+    """
+    # Cancelling the run also cancels the gather over eval_tasks, so a task
+    # can be "done" without its session having finished. Only a task that
+    # returned a result means the session is over.
+    unfinished = [
+        (session_id, test_name)
+        for task, (session_id, _, test_name) in zip(eval_tasks, session_links)
+        if not task.done() or task.cancelled() or task.exception() is not None
+    ]
+    # A session can be started before its eval task exists.
+    unfinished += [
+        (session_id, test_name)
+        for session_id, _, test_name in session_links[len(eval_tasks):]
+    ]
+    for task in eval_tasks:
+        task.cancel()
+    if not unfinished:
+        return
+    print(f"Run cancelled; terminating {len(unfinished)} Devin session(s)", flush=True)
+    try:
+        stopped = await asyncio.wait_for(
+            asyncio.gather(
+                *(devin_api_client.terminate_session(sid) for sid, _ in unfinished),
+                return_exceptions=True,
+            ),
+            timeout=TERMINATE_TIMEOUT,
+        )
+    except asyncio.TimeoutError:
+        stopped = [False] * len(unfinished)
+    names = [
+        f"{name} ({'terminated' if ok is True else 'not confirmed'})"
+        for (_, name), ok in zip(unfinished, stopped)
+    ]
+    message = f"*QA {environment}* · run cancelled; Devin sessions: " + ", ".join(names)
+    print(message, flush=True)
+    post_to_slack(message)
+
+
+async def _run_sessions(
+    url: str,
+    test_names: list[str] | None,
+    external_api_specs_url: str,
+    sample_pdf_url: str,
+    johndoejunior_zip_url: str,
+    environment: str,
+    run_start: float,
+    eval_tasks: list[asyncio.Task],
+    session_links: list[tuple[str, str, str]],
+) -> list[QATestResult]:
     if test_names:
         unknown = [n for n in test_names if n not in ALL_TESTS]
         if unknown:
@@ -318,12 +398,14 @@ async def run_tests_and_send_to_slack(
         session_id = session_response["session_id"]
         session_url = session_response["url"]
 
+        # Record the session before creating its task, so a cancellation in
+        # between still terminates it.
+        session_links.append((session_id, session_url, test["test_name"]))
         eval_tasks.append(
             asyncio.create_task(
                 poll_session_and_eval(test["test_name"], session_id, session_url)
             )
         )
-        session_links.append((session_id, session_url, test["test_name"]))
         await asyncio.sleep(0.1)
     print("Done starting sessions")
 
@@ -402,6 +484,14 @@ async def main():
     args = parser.parse_args()
 
     test_names = args.tests.split(",") if args.tests else None
+
+    # GitHub cancels a run with SIGINT, then SIGTERM. Turn both into task
+    # cancellation so the unfinished Devin sessions get terminated.
+    main_task = asyncio.current_task()
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, main_task.cancel)
+
     results = await run_tests_and_send_to_slack(
         url=args.url,
         test_names=test_names,
@@ -419,4 +509,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except asyncio.CancelledError:
+        sys.exit("QA run cancelled")

@@ -37,6 +37,12 @@ on:
         default: 'https://dev-assets.app.sky-tech.ai/previews/John_Doe_Junior.zip'
         type: string
 
+# A new run of the same tests on the same branch and environment replaces a
+# queued or running one; the runner terminates the old run's Devin sessions.
+concurrency:
+  group: qa-${{ github.ref }}-${{ inputs.environment }}-${{ inputs.tests || 'default' }}
+  cancel-in-progress: true
+
 jobs:
   run-qa-tests:
     runs-on: ubuntu-latest
