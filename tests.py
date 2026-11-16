@@ -228,8 +228,9 @@ Each section row and category header has a ⋮ actions menu. Do the steps in ord
 - CHECK only sections whose names match are shown. Then clear the filter.
 
 ### Duplicates
-- Rename one section to exactly the same name as another section, so there is a duplicate.
-- Click the "Duplicates" button.
+- Pick two sections with similar page counts: the larger has at most twice the pages of the smaller (two 1-page sections are ideal). The app only treats same-named sections as duplicates when their sizes are close.
+- Rename one of them to exactly the same name as the other, so there is a duplicate.
+- Click the "Duplicates" button in the doc list actions bar.
 - CHECK a "Duplicates" dialog lists a group containing both sections.
 - In that group, select one section to delete, click "Delete 1 Duplicate" and confirm.
 - CHECK that section disappears from the document list and the other one is kept.
