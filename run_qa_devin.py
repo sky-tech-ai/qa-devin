@@ -38,7 +38,7 @@ class QATestResult(TypedDict, total=False):
     archived_cases: list[str]
 
 
-MAX_TIME_PER_TEST = 60 * 60  # 60 minutes (combined tests run two parts on one case)
+MAX_TIME_PER_TEST = 75 * 60  # 75 minutes; test-custom-reports alone takes ~50
 PROGRESS_INTERVAL = int(os.getenv("QA_PROGRESS_MINUTES", "1")) * 60
 # Devin statuses after which the session won't do more work on its own.
 DONE_STATUSES = {"blocked", "stopped", "finished", "expired"}
