@@ -790,7 +790,7 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
         test_name="test-case-workspace",
         user_prompt=f"""
 ## Objective
-Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page, highlight text, crop, sticky notes), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
+Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page, search, go to a page, highlight text, crop, sticky notes), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -822,6 +822,16 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - Select a page and click Delete in the bottom toolbar, then confirm.
 - CHECK the page is removed from the viewer and the doc list, and the section's page count drops by one.
 - {CHECK_PERSISTENCE}
+
+### Search in the Document
+- In the viewer, click the "Search in document" icon (or press Ctrl+F). Type "injury" and press Enter.
+- CHECK a counter like "1/N" appears and the viewer jumps to a page containing "injury", with the match highlighted.
+- If N is more than 1, click "Next Result". CHECK the counter shows "2/N" and the viewer moves to that match.
+- Click "Close Search". CHECK the search box closes.
+
+### Go to a Page
+- In the page number box ("Current page", shown as "<page> / <total>"), type 2 and press Enter.
+- CHECK the viewer shows page 2 of the document and the box reads 2.
 
 ### Highlight (Text Snip)
 - Select a page that has printed text. Click "Highlight" in the bottom toolbar.
@@ -979,7 +989,7 @@ The versions dropdown and the ⋮ actions button are on the case's files page.
         test_name="test-custom-reports",
         user_prompt=f"""
 ## Objective
-Test the main custom report flow end to end: create a report template in Settings, generate a report from it on a case, work with the report (sources, edit, section rewrite), make it outdated by changing the doc list and rewrite it, export it, then edit, duplicate, export and re-import the template, and delete the templates.
+Test the main custom report flow end to end: create a report template in Settings, generate a report from it on a case, work with the report (sources, edit, section rewrite, format, AI Editor), make it outdated by changing the doc list and rewrite it, export it, then edit, duplicate, export and re-import the template, and delete the templates.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -1049,6 +1059,19 @@ Test the main custom report flow end to end: create a report template in Setting
 - CHECK:
   - "Treatment Summary" shows regenerated text (not empty, no error)
   - "Case Overview" still contains "QA edit marker." (other sections are unchanged)
+
+## Format a Section
+- Hover over "Treatment Summary" and click "Format". Type "Use a numbered list" in "Formatting instructions (optional)" and click "Apply".
+- CHECK after it finishes "Treatment Summary" is shown as a numbered list (no error message).
+
+## AI Editor
+- Click "✦ AI Editor" at the bottom of the report panel. If there is no such button, record this CHECK as failed with "AI Editor not available for this organization" and continue with the next part.
+- CHECK the AI Editor opens with the "Tell AI what to change in the report…" box.
+- Type "In Case Overview, add the sentence QA AI edit. at the end" and send it.
+- CHECK progress steps appear (e.g. "Working on it…", "Drafting…"), then a plan starting "Here's what I'm changing:".
+- CHECK "Case Overview" shows a "Suggested edit" with "Accept" and "Reject".
+- Click "Accept". CHECK "Case Overview" now contains "QA AI edit." and still contains "QA edit marker.".
+- Close the AI Editor.
 
 ## Outdated Report after a Doc List Change
 - In the doc list on the left, move any section to a different category (section ⋮ menu → "Move To...").
