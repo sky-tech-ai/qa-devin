@@ -124,13 +124,21 @@ async def log_progress(session_links: list[tuple[str, str, str]]) -> None:
         print("\n".join(lines), flush=True)
 
 # Per-environment names of the Devin secrets (app.devin.ai/secrets) holding the
-# HTTP basic auth (username:password), the External API key and the app login.
+# HTTP basic auth (username:password), the External API key and the app logins.
+# "accounts" maps a test's account (tests.py, see SHARED_ACCOUNT) to the secrets
+# holding that login's email and password. Every account other than "shared"
+# belongs to one test that logs out, so its logout can't end the sessions of
+# the tests running in parallel as the shared user. The dedicated users must be
+# Admins in the same organization as the shared user.
 ENVIRONMENTS = {
     "dev": {
         "basic_auth_secret": "DEV_BASIC_AUTH",
         "api_key_secret": "SKY_API_KEY_DEV",
-        "user_email_secret": "DEV_USER_EMAIL",
-        "user_password_secret": "DEV_USER_PASSWORD",
+        "accounts": {
+            "shared": ("DEV_USER_EMAIL", "DEV_USER_PASSWORD"),
+            "logout-cases": ("DEV_LOGOUT_CASES_USER_EMAIL", "DEV_LOGOUT_CASES_USER_PASSWORD"),
+            "logout-workspace": ("DEV_LOGOUT_WORKSPACE_USER_EMAIL", "DEV_LOGOUT_WORKSPACE_USER_PASSWORD"),
+        },
         "inbox_domain": "qa-inbox.sky-tech.ai",
         "inbox_bucket": "dev-sky-qa-inbox",
         "inbox_region": "eu-west-1",
@@ -140,8 +148,11 @@ ENVIRONMENTS = {
     "staging": {
         "basic_auth_secret": "STAGING_BASIC_AUTH",
         "api_key_secret": "SKY_API_KEY_STAGING",
-        "user_email_secret": "STAGING_USER_EMAIL",
-        "user_password_secret": "STAGING_USER_PASSWORD",
+        "accounts": {
+            "shared": ("STAGING_USER_EMAIL", "STAGING_USER_PASSWORD"),
+            "logout-cases": ("STAGING_LOGOUT_CASES_USER_EMAIL", "STAGING_LOGOUT_CASES_USER_PASSWORD"),
+            "logout-workspace": ("STAGING_LOGOUT_WORKSPACE_USER_EMAIL", "STAGING_LOGOUT_WORKSPACE_USER_PASSWORD"),
+        },
         "inbox_domain": "qa-inbox-staging.sky-tech.ai",
         "inbox_bucket": "staging-sky-qa-inbox",
         "inbox_region": "ca-central-1",
@@ -391,13 +402,20 @@ async def _run_sessions(
         selected = [ALL_TESTS[n] for n in test_names]
     else:
         selected = QA_TESTS
+    dedicated = [t["account"] for t in selected if t["account"] != "shared"]
+    if len(dedicated) != len(set(dedicated)):
+        raise ValueError(f"Tests that log out can't share an account in one run: {dedicated}")
     for test in selected:
+        env = {k: v for k, v in ENVIRONMENTS[environment].items() if k != "accounts"}
+        email_secret, password_secret = ENVIRONMENTS[environment]["accounts"][test["account"]]
         prompt = test["user_prompt"].format(
             url=url,
             external_api_specs_url=external_api_specs_url,
             sample_pdf_url=sample_pdf_url,
             johndoejunior_zip_url=johndoejunior_zip_url,
-            **ENVIRONMENTS[environment],
+            user_email_secret=email_secret,
+            user_password_secret=password_secret,
+            **env,
         )
         session_response = await devin_api_client.start_session(
             prompt,

@@ -4,6 +4,18 @@ from typing import TypedDict
 class QATest(TypedDict):
     test_name: str
     user_prompt: str
+    # Which QA login the session uses (a key of "accounts" in ENVIRONMENTS,
+    # run_qa_devin.py).
+    account: str
+
+
+# The QA login most sessions share. Logging out (POST /api/logout) revokes the
+# user's tokens on the server for every session, so a test that logs out while
+# others are logged in as the same user breaks them with 401s mid-run. Any test
+# that logs out, changes or resets its own password, or otherwise invalidates
+# its own sessions must use a dedicated account of its own (one per test: two
+# such tests sharing an account would break each other).
+SHARED_ACCOUNT = "shared"
 
 
 QA_PREAMBLE = f"""\
@@ -65,11 +77,12 @@ CHECK_CONFIRMATION_DIALOG = "CHECK confirmation dialog appears"
 CHECK_SELECTION_CLEARS = "Selection clears after"
 
 
-def create_qa_test(test_name: str, user_prompt: str) -> QATest:
+def create_qa_test(test_name: str, user_prompt: str, account: str = SHARED_ACCOUNT) -> QATest:
     user_prompt = QA_PREAMBLE + "\n\n" + user_prompt
     return {
         "test_name": test_name,
         "user_prompt": user_prompt,
+        "account": account,
     }
 
 
@@ -243,6 +256,8 @@ This creates a real (throwaway) user in the organization. Whatever happens, fini
 - Cleanup (always, even if a CHECK above failed): log out, log in as the QA user, go to Settings → "Team". On MEMBER_EMAIL's row click the trash icon ("Remove User") and confirm "Deactivate" in the "Deactivate Team Member" dialog. (Deactivating an active member removes them from the organization completely.)
 - CHECK MEMBER_EMAIL is no longer listed.
         """,
+        # Logs out (Part 4 and the new member flow): own account, see SHARED_ACCOUNT.
+        account="logout-cases",
     ),
     create_qa_test(
         test_name="test-doclist",
@@ -1027,6 +1042,8 @@ Do this part last: it logs you out.
 - CHECK the guest is removed from the dialog.
 - Log out and open SHARE_LINK again. CHECK an "Access Denied" page says "This share link is invalid or has expired."
         """,
+        # Logs out (Share the Case): own account, see SHARED_ACCOUNT.
+        account="logout-workspace",
     ),
     create_qa_test(
         test_name="test-chronology",
@@ -1296,6 +1313,8 @@ def combine_qa_tests(test_name: str, part_names: list[str]) -> QATest:
     by_name = {t["test_name"]: t for t in SINGLE_TESTS}
     objectives, bodies = [], []
     for i, name in enumerate(part_names, 1):
+        # A combined session has one login; don't mix in a test that logs out.
+        assert by_name[name]["account"] == SHARED_ACCOUNT, name
         prompt = by_name[name]["user_prompt"]
         assert prompt.startswith(QA_PREAMBLE) and prompt.count(DOCLIST_TEST_SETUP) == 1, name
         head, body = prompt[len(QA_PREAMBLE):].split(DOCLIST_TEST_SETUP)
@@ -1347,3 +1366,7 @@ QA_TESTS: list[QATest] = [
 
 # Every test that --tests can select by name.
 ALL_TESTS: dict[str, QATest] = {t["test_name"]: t for t in SINGLE_TESTS + QA_TESTS}
+
+# Tests with a dedicated account must not share it (see SHARED_ACCOUNT).
+_dedicated = [t["account"] for t in ALL_TESTS.values() if t["account"] != SHARED_ACCOUNT]
+assert len(_dedicated) == len(set(_dedicated)), _dedicated
