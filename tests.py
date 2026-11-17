@@ -221,7 +221,7 @@ This creates a real (throwaway) user in the organization. Whatever happens, fini
         test_name="test-doclist",
         user_prompt=f"""
 ## Objective
-Test the main document list flows: organize sections and categories, find sections, rotate a section, extract (move) and delete selected pages, review an AI category definition, and export the doc list.
+Test the main document list flows: organize sections and categories, find sections, rotate a section, extract (move) and delete selected pages, review an AI category definition, split and merge sections, rename, sort and merge categories, reorder by dragging (not while filtered), batch AI rename, summarize, move and merge, expand and collapse, and export the doc list.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -282,6 +282,41 @@ Each section row and category header has a ⋮ actions menu. Do the steps in ord
 - CHECK a progress view appears ("Defining Category from N Documents" or "Refining …"), followed by a review dialog ("Review Category Definition" or "Confirm Updated Category Definition") showing an AI-drafted definition.
 - Close the dialog without saving (Cancel or the X). Do not click Save or Update: category definitions are shared by the whole organization and affect how every case is classified.
 - CHECK no "Category saved" or "Category updated" toast appeared.
+
+### Split and Merge a Section
+- On a section with at least 3 pages: ⋮ → "Split".
+- CHECK a "Split Document" dialog asks for "the page after which the document will be split", with "First Document Name" and "Second Document Name".
+- Split after page 1, keep the suggested names and click "Split".
+- CHECK there are now two sections in the same category: one with 1 page and one with the rest, with the same total page count.
+- On the 1-page section: ⋮ → "Merge". CHECK a "Merge Documents" dialog shows "First Document", "Second Document" and "Merged Document Name".
+- Choose the other part as the second document and click "Merge". CHECK they are one section again with all the pages.
+
+### Category Operations
+- On a category: ⋮ → "Rename", append " QA" and press Enter. CHECK the new name is shown.
+- On a category with at least 2 sections: ⋮ → "Sort by Name". CHECK its sections are in A–Z order. Refresh. CHECK the order is kept.
+- On a category with 2 to 4 sections: ⋮ → "Merge All".
+- CHECK a "Merge All Documents" dialog says how many documents it will merge, with a warning that it can't be undone. Click "Merge All".
+- CHECK the category now has a single section whose page count is the sum of the merged ones.
+
+### Reorder by Dragging
+- Collapse all categories. Drag one category by its grip handle (vertical lines icon) above the category before it. CHECK the order changes, and is kept after a refresh.
+- Expand a category with at least 2 collapsed sections. Drag a section by its grip handle one position down. CHECK the order changes, and is kept after a refresh.
+- Expand a section with at least 3 pages. Drag its last page tile to the first position. CHECK the page order changes, and is kept after a refresh.
+
+### Dragging Is Off While Filtering
+- Type a filter that matches at least 2 sections. CHECK no grip handles are shown on the visible section rows, and dragging a section doesn't move it.
+- Clear the filter. CHECK all sections and their grip handles are back.
+
+### Work with Several Sections
+- Ctrl+click (Cmd+click on a Mac) two section rows. CHECK both are highlighted and a toolbar shows "2 selected" with "Move", "AI Rename", "Merge", "Summarize" and "Delete".
+- Click "AI Rename". CHECK a "Renaming 2 sections..." or "2 sections renamed" toast appears (it may be brief), or the two section names change.
+- Select two sections again and click "Summarize". CHECK the Chat tab shows your message starting "Summarize each of these sections:" with both names, and an answer arrives.
+- Select two sections in the same category and click "Move", pick a different category in "Move To..." and confirm. CHECK both are now in that category.
+- With those two still in the same category, select both and click "Merge". CHECK they become one section with the combined pages (a "Merging Sections" progress dialog may show briefly).
+
+### Expand and Collapse
+- Click a category header. CHECK its sections are hidden; click it again and CHECK they are shown.
+- Click a section to expand it. CHECK its page thumbnails appear with page numbers; click it again to collapse.
 
 ### Export the Doc List
 Exports are delivered by email; don't check file contents.
