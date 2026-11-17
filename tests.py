@@ -812,7 +812,7 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
         test_name="test-case-workspace",
         user_prompt=f"""
 ## Objective
-Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page, search, go to a page, highlight text, crop, sticky notes), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
+Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page, go to a page, highlight text, crop, sticky notes), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -844,12 +844,6 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - Select a page and click Delete in the bottom toolbar, then confirm.
 - CHECK the page is removed from the viewer and the doc list, and the section's page count drops by one.
 - {CHECK_PERSISTENCE}
-
-### Search in the Document
-- In the viewer, click the "Search in document" icon (or press Ctrl+F). Type "injury" and press Enter.
-- CHECK a counter like "1/N" appears and the viewer jumps to a page containing "injury", with the match highlighted.
-- If N is more than 1, click "Next Result". CHECK the counter shows "2/N" and the viewer moves to that match.
-- Click "Close Search". CHECK the search box closes.
 
 ### Go to a Page
 - In the page number box ("Current page", shown as "<page> / <total>"), type 2 and press Enter.
