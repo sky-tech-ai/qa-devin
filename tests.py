@@ -53,12 +53,14 @@ DOCLIST_TEST_SETUP = f"""\
 - Log in to the app.
 - Open the case in the app.
 - Click "Launch Sky" button
+
+Page-count badges in the document list belong to individual sections, not categories. Do not require category-level page totals.
 """
 
 # Common CHECK patterns
 CHECK_PERSISTENCE = "CHECK persistence after page refresh"
 CHECK_ORDER_PERSISTS = "CHECK order persists after refresh"
-CHECK_PAGE_COUNT_UPDATES = "CHECK page count updates"
+CHECK_PAGE_COUNT_UPDATES = "CHECK section page counts update"
 CHECK_CONFIRMATION_DIALOG = "CHECK confirmation dialog appears"
 CHECK_SELECTION_CLEARS = "Selection clears after"
 
@@ -261,10 +263,10 @@ Each section row and category header has a ⋮ actions menu. Do the steps in ord
 ### Organize Sections
 - Rename a section: ⋮ → "Rename", type a new name ending in " QA", press Enter.
 - CHECK the new name is shown in the doc list.
-- Move that section: ⋮ → "Move To...", pick a different category.
-- CHECK it disappears from its old category and appears in the new one, and both categories' page counts update.
-- Delete another section: ⋮ → "Delete", confirm.
-- CHECK the section is gone and its category's page count drops.
+- Record that section's displayed page count, then move it: ⋮ → "Move To...", pick a different category.
+- CHECK it disappears from its old category and appears in the new one with the same section page count.
+- Record the other sections' page counts, then delete another section: ⋮ → "Delete", confirm.
+- CHECK the section is gone and the remaining sections keep their page counts.
 
 ### Organize Categories
 - Click "Add Category" in the doc list actions bar, name it "QA Category", press Enter.
@@ -378,9 +380,9 @@ Test all section operations in the document list including rename, move, split, 
 ### Move Section to Different Category
 - Select "Move To..." from section actions menu
 - CHECK dropdown shows all available categories
-- Move section to a different category
+- Record the section's displayed page count, then move it to a different category
 - CHECK section disappears from source category and appears in target category
-- {CHECK_PAGE_COUNT_UPDATES} for both categories
+- CHECK the moved section retains its displayed page count
 - Test moving to the same category (should be no-op or prevented)
 - CHECK section order in target category
 
@@ -413,12 +415,13 @@ Test all section operations in the document list including rename, move, split, 
 - Test merging sections from different categories (should move first)
 
 ### Delete Section
+- Record the displayed page counts of the other sections
 - Select "Delete" from section actions
 - {CHECK_CONFIRMATION_DIALOG}
 - Test:
   - Confirm deletion - section should disappear
   - Cancel deletion - section remains
-  - {CHECK_PAGE_COUNT_UPDATES} for category
+  - CHECK remaining sections retain their displayed page counts
   - CHECK deletion persists after refresh
 - CHECK "Delete" stays available for the only section left in the fallback category (an empty fallback category is allowed)
         """,
@@ -599,29 +602,29 @@ Batch selection uses **Shift+click and Cmd/Ctrl+click on section rows** (outside
 ### Move Multiple Selected Sections
 #### Move to an Existing Category in Document-List Order
 - Clear any search filter, exit export mode, and clear section selection.
-- Find three sections in one source category and record their names and displayed top-to-bottom order as A1, A2, A3. These are labels for this test, not required section names. If needed, split a multi-page section to prepare three sections before continuing.
-- Choose a different, already saved target category containing at least one section. Record its current section order and both categories' page counts.
+- Find three sections in one source category and record their names, displayed page counts and top-to-bottom order as A1, A2, A3. These are labels for this test, not required section names. If needed, split a multi-page section to prepare three sections before continuing.
+- Choose a different, already saved target category containing at least one section. Record its current section order and the displayed page counts of the unselected sections in both categories.
 - Hold Ctrl (Cmd on macOS) and click the section row A3 FIRST, then A1. Do not use export checkboxes or Shift-click: click order must be opposite to document-list order.
 - CHECK exactly A1 and A3 are selected, A2 is not selected, and the section selection toolbar shows a count of 2.
 - Click "Move" in the section selection toolbar, choose the saved target category in "Move To...", then confirm with "Move".
 - CHECK:
   - The target's original sections remain in the recorded order, followed by A1 then A3, NOT A3 then A1.
   - A1 and A3 disappear from the source; A2 stays in the source and unselected sections keep their order.
-  - {CHECK_PAGE_COUNT_UPDATES} for both categories by the moved sections' page counts.
+  - A1 and A3 retain their recorded section page counts; unselected sections' page counts are unchanged.
   - {CHECK_SELECTION_CLEARS} move.
 - Refresh the page and reopen the categories.
 - {CHECK_ORDER_PERSISTS}: the target still ends with A1, A3, and neither moved section reappears in the source.
 
 #### Move to a New Category in Document-List Order
 - Use "Add Category" to create a uniquely named empty category in the document list. If a create-new-name option is offered, select it. Do not refresh or move any documents into it yet: this must still be a new, unsaved category, not an existing saved category.
-- Choose two sections from DIFFERENT source categories. Record their names and current top-to-bottom order across the whole document list as U then V, and record their page counts and their source categories' page counts.
+- Choose two sections from DIFFERENT source categories. Record their names and current top-to-bottom order across the whole document list as U then V, and record their displayed section page counts and those of the unselected sections in their source categories.
 - Clear section selection, then Ctrl/Cmd-click V FIRST and U SECOND.
 - CHECK exactly U and V are selected and the section selection toolbar shows a count of 2.
 - Click "Move" in the section selection toolbar, choose the newly added empty category in "Move To...", then confirm with "Move".
 - CHECK:
   - The new category contains exactly U then V, NOT V then U.
   - U and V disappear from their respective source categories; unselected sections keep their order.
-  - {CHECK_PAGE_COUNT_UPDATES}: each source loses the moved section's pages and the new category has the sum of U and V's pages.
+  - U and V retain their recorded section page counts; unselected sections' page counts are unchanged.
   - {CHECK_SELECTION_CLEARS} move.
 - Refresh the page and reopen the categories.
 - {CHECK_ORDER_PERSISTS}: the new category remains saved with exactly U then V, and neither section reappears in its source category.
