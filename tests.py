@@ -853,7 +853,9 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - Select a page that has printed text and work on that page only (Highlight only works on the selected page). Click "Highlight" in the bottom toolbar.
 - Draw a closed loop around one whole line of text: press a little above and to the left of the line, drag right along the top, down past the bottom of the line, back left along the bottom, and release near where you started. The loop must be at least 30 px tall and 30 px wide on screen. The app ignores anything smaller, including a flat stroke along the line, without any message.
 - If no toast appears, use the rectangle mode instead: click once above and to the left of the line, then click once below and to the right of it (corners at least 30 px apart vertically and horizontally).
-- CHECK a "Text copied" toast appears with "Copied: …" showing text from that area.
+- CHECK the text from that line was copied. Either is enough:
+  - a "Text copied" toast with "Copied: …" (it disappears after a few seconds, so look right after releasing), or
+  - the clipboard holds words from that line: click the browser's address bar, press Ctrl+V (Cmd+V on a Mac), read what was pasted, then press Escape to discard it. Don't paste into any field in the app.
 - Click "Highlight" again to turn it off.
 
 ### Crop to Copy
