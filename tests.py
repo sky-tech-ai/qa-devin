@@ -78,7 +78,7 @@ SINGLE_TESTS: list[QATest] = [
         test_name="test-cases",
         user_prompt=f"""
 ## Objective
-Test creating a case, uploading a document, finding the case with global search and archiving the case, first through the Sky External API and then through the app UI the way a user does it. Then test the Settings and Billing pages, and finally the login, logout, password reset and registration forms.
+Test creating a case, uploading documents (duplicate detection, a password-protected PDF, reprocessing), chat staying within the case, finding the case and documents with global search and archiving the case, first through the Sky External API and then through the app UI the way a user does it. Then test the Settings and Billing pages, and finally the login, logout, password reset and registration forms.
 
 ## Part 1: External API
 You should test Sky External API: {{external_api_specs_url}}
@@ -120,11 +120,36 @@ From here to the end of the test, this overrides the "abort" rule above: if a CH
 - CHECK within 5 minutes the number is gone from "Ref #" (it may briefly show "Removing") and the "1 of 1 file still needs a referencing decision" banner is back.
 - Click "Skip All". CHECK "Ref #" shows "Skipped" and the banner is gone.
 
+### Duplicate Upload
+- Upload the same PDF to this case again (dropzone → "Choose...").
+- CHECK a "Duplicate Content Detected" dialog says the file has identical content to a document already in this case, and names it under "File matching existing document:".
+- Click "Cancel". CHECK the case still has exactly 1 file.
+
+### Password-Protected PDF
+- On your machine, create a password-protected copy of the PDF named "qa-locked.pdf" with the password "qa-pass-123", e.g. `qpdf --encrypt qa-pass-123 qa-pass-123 256 -- sample.pdf qa-locked.pdf` (or `pip install pypdf` and encrypt it with pypdf).
+- Upload "qa-locked.pdf" to this case. Wait for it to finish its first processing step (up to 3 minutes).
+- CHECK the file shows a locked (key) badge, and a banner says "1 file is locked with a password" with a "Start Unlocking" button.
+- Click "Start Unlocking" (or the file's "Unlock" button). CHECK an "Unlock File" dialog asks for the "File Password".
+- Enter "wrong-password" and click "Unlock". CHECK the dialog says "That password didn't work — the file is still locked. Try another one."
+- Enter "qa-pass-123" and click "Unlock".
+- CHECK the file starts processing and, within 10 minutes (checking every 30 seconds), its badge turns green ("Processed" on hover).
+
+### Reprocess a Document
+- On the original PDF's row: ⋮ ("More actions") → "Reprocess". If a "Reprocess Document" dialog appears, keep "Preserve Original Structure" and click "Reprocess".
+- CHECK a "Reprocessing started" toast appears or the file's badge shows a processing step (both may be brief), and within 10 minutes the badge is green ("Processed") again.
+
+### Chat Stays Within the Case
+- Click "Launch Sky" and open the Chat tab. Ask "What injuries did John Doe have?" and wait for the answer.
+- CHECK the answer says this case has no information about John Doe (this case only contains the sample PDF) and cites no John Doe documents.
+- Go back to the case page.
+
 ### Global search
 - Go to the "Cases" page. Click on an empty area of the page (not an input), then press Ctrl+K (Cmd+K on a Mac).
 - CHECK a search dialog opens with a focused "Search" input.
 - Type the full case name ("QA UI Case <your 6 digits>") and wait 2 seconds.
-- CHECK a "Cases" group lists exactly one result: your case, with the matched text highlighted and "1 file" in its details line.
+- CHECK a "Cases" group lists exactly one result: your case, with the matched text highlighted and "2 files" in its details line.
+- Replace the text with "sample" and wait 2 seconds. CHECK a "Documents" group lists PDF files named like "sample", each with its case name and a details line (e.g. "1 page · Uploaded … · By …").
+- If a "Show More Documents" link is shown below the documents, click it. CHECK only documents are listed now, under a "Documents" badge; click the badge to go back to all results. (If there is no such link, there are 10 or fewer matches; skip this.)
 - Replace the text with "zzqa nomatch <your 6 digits>" and wait 2 seconds.
 - CHECK the dialog shows "No results found".
 - Press Escape. CHECK the search dialog closes.
@@ -865,6 +890,23 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
 - Open the conversation selector again. CHECK the "Chat Sessions" list shows both chats, each with a message count (e.g. "2 msgs").
 - Select the first chat. CHECK its messages (the injuries question and answer) are shown again.
 
+### Prompt Tips
+- Choose "New Chat" in the conversation selector. CHECK the empty state shows "Ask SKY anything", a tip card with a dashed border (a label such as "BE SPECIFIC", a ✕ example and a ✓ example), and suggested questions below it.
+- Click the tip card. CHECK its ✓ example is sent as your message and an answer arrives.
+
+### Image Attachment
+- On your machine, create a PNG named "qa-image.png" (e.g. with Python PIL: a 400×200 white image with the black text "QA IMAGE <6 random digits>").
+- Click the "+" button ("Add files") next to the chat input, then "Add Photos", and choose qa-image.png.
+- CHECK a thumbnail with a "Remove image" button appears above the input.
+- Type "What text is written in the attached image?" and send it.
+- CHECK your message shows the image, and the answer contains "QA IMAGE" and your digits.
+
+### Share the Chat
+- If a "Share" button is shown above the chat (next to a "Private" badge): click it.
+  - CHECK a "Share Conversation" dialog with the checkbox "Share this conversation with my organization". Tick it and click "Share Chat".
+  - CHECK the badge now says "Shared" and the button reads "Manage". Click "Manage", then "Stop Sharing". CHECK the badge says "Private" again.
+- If there is no "Share" button, record this CHECK as failed with "chat sharing not enabled for this organization".
+
 ### Clear
 - Click the Clear button.
 - CHECK the messages are gone and the empty chat state ("Ask SKY anything") is shown.
@@ -941,6 +983,8 @@ From here to the end of the test, this overrides the "abort" rule above: if a CH
 - CHECK after a few seconds a summary appears under the section's name (in capitals) and it describes that section's document.
 - Click a page tile of that section.
 - CHECK the title changes to "<SECTION NAME> – PAGE <N>" and the summary changes to that page.
+- Look for a word with a dotted yellow underline in the summary (a defined term, e.g. a medication or medical term). Click it.
+- CHECK a dialog titled with that term shows its definition, with "Copy" and "Close". Click "Close".
 - Click the section again (so the section summary is shown). Hover the summary text and click "Rewrite" in the row that appears under it.
 - CHECK a spinner shows on "Rewrite", then a summary is shown again (not empty, no error message).
 - Hover the summary again and click "Format". Type "Rewrite as a bullet list" in "Formatting instructions (optional)" and click "Apply".
@@ -1035,6 +1079,18 @@ The event list only renders rows that are on screen. To work with a specific eve
 ### Export
 - Clear the filter. Click "Export" in the Chronology tab's toolbar and choose "Export as DOCX".
 - CHECK a .docx file is downloaded (look in the browser's downloads or ~/Downloads).
+
+### Reorder Events
+- With no filter, find two neighbouring events in the dated list. Drag the upper one by its timeline dot (the "Reorder event" handle) below the other.
+- CHECK the two events swap places. (The new order isn't saved, so don't check it after a refresh.)
+
+### Duplicates
+- Pick a dated event and note its Date and Detail exactly.
+- Click "Event" ("Add event") in the Chronology toolbar. Enter the same Date and exactly the same Detail, fill any other required fields, and create it (click "Continue" and then "Create" if the dialog has two steps).
+- CHECK both events now show a small coloured dot ("Review 1 possible duplicate" on hover).
+- Click the dot. CHECK a "Possible Duplicates" dialog shows a group marked "Exact Match" with "2 events".
+- Click "Delete" on the event you just added and confirm "Delete" in the "Delete Event" dialog.
+- CHECK the group is gone (the dialog may close by itself) and the original event is still listed.
         """,
     ),
     create_qa_test(
@@ -1187,6 +1243,11 @@ Test the main custom report flow end to end: create a report template in Setting
 - Keep DOCX and click "Export".
 - CHECK an "Exporting Your Document" dialog appears, saying to check your email, with a file name ending in ".docx". Close it.
   (The file is delivered by email; don't check the mailbox.)
+
+## Generate Again
+- In the Reports tab, open the report selector at the top. On TEMPLATE_NAME's row, hover the round status icon (a green check) until it turns into a refresh icon, and click it.
+- CHECK a "Generate Again" dialog asks "Are you sure you want to regenerate the TEMPLATE_NAME report? This will replace the current version." Click "Regenerate".
+- CHECK the report shows generation progress, and within 10 minutes both sections have newly generated text without "QA AI edit." (the old version was replaced).
 
 ## Manage the Template
 Go to Settings → Reports and find the TEMPLATE_NAME card. Each card has a ⋮ menu ("More actions").
