@@ -812,7 +812,7 @@ Test the main chat flow: ask a question about the case, get an answer with sourc
         test_name="test-case-workspace",
         user_prompt=f"""
 ## Objective
-Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page, search, go to a page, highlight text, crop, sticky notes), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
+Test the main case workspace flows besides the doc list and chat: the PDF viewer (select a page, zoom, OCR text, rotate, delete a page, go to a page, highlight text, crop, sticky notes), the Summary tab (rewrite, format, export) and Notes tab (export), and sharing the case.
 
 ## Login Instructions
 {DEVIN_QA_LOGIN_INSTRUCTIONS}
@@ -845,20 +845,17 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - CHECK the page is removed from the viewer and the doc list, and the section's page count drops by one.
 - {CHECK_PERSISTENCE}
 
-### Search in the Document
-- In the viewer, click the "Search in document" icon (or press Ctrl+F). Type "injury" and press Enter.
-- CHECK a counter like "1/N" appears and the viewer jumps to a page containing "injury", with the match highlighted.
-- If N is more than 1, click "Next Result". CHECK the counter shows "2/N" and the viewer moves to that match.
-- Click "Close Search". CHECK the search box closes.
-
 ### Go to a Page
 - In the page number box ("Current page", shown as "<page> / <total>"), type 2 and press Enter.
 - CHECK the viewer shows page 2 of the document and the box reads 2.
 
 ### Highlight (Text Snip)
-- Select a page that has printed text. Click "Highlight" in the bottom toolbar.
-- Drag across a line of text on the page (press at one corner, release at the opposite corner; if nothing happens, click one corner and then the opposite corner).
-- CHECK a "Text copied" toast appears with "Copied: …" showing text from that area.
+- Select a page that has printed text and work on that page only (Highlight only works on the selected page). Click "Highlight" in the bottom toolbar.
+- Draw a closed loop around one whole line of text: press a little above and to the left of the line, drag right along the top, down past the bottom of the line, back left along the bottom, and release near where you started. The loop must be at least 30 px tall and 30 px wide on screen. The app ignores anything smaller, including a flat stroke along the line, without any message.
+- If no toast appears, use the rectangle mode instead: click once above and to the left of the line, then click once below and to the right of it (corners at least 30 px apart vertically and horizontally).
+- CHECK the text from that line was copied. Either is enough:
+  - a "Text copied" toast with "Copied: …" (it disappears after a few seconds, so look right after releasing), or
+  - the clipboard holds words from that line: click the browser's address bar, press Ctrl+V (Cmd+V on a Mac), read what was pasted, then press Escape to discard it. Don't paste into any field in the app.
 - Click "Highlight" again to turn it off.
 
 ### Crop to Copy
