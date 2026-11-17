@@ -131,12 +131,22 @@ ENVIRONMENTS = {
         "api_key_secret": "SKY_API_KEY_DEV",
         "user_email_secret": "DEV_USER_EMAIL",
         "user_password_secret": "DEV_USER_PASSWORD",
+        "inbox_domain": "qa-inbox.sky-tech.ai",
+        "inbox_bucket": "dev-sky-qa-inbox",
+        "inbox_region": "eu-west-1",
+        "inbox_key_id_secret": "DEV_QA_INBOX_AWS_ACCESS_KEY_ID",
+        "inbox_secret_key_secret": "DEV_QA_INBOX_AWS_SECRET_ACCESS_KEY",
     },
     "staging": {
         "basic_auth_secret": "STAGING_BASIC_AUTH",
         "api_key_secret": "SKY_API_KEY_STAGING",
         "user_email_secret": "STAGING_USER_EMAIL",
         "user_password_secret": "STAGING_USER_PASSWORD",
+        "inbox_domain": "qa-inbox-staging.sky-tech.ai",
+        "inbox_bucket": "staging-sky-qa-inbox",
+        "inbox_region": "ca-central-1",
+        "inbox_key_id_secret": "STAGING_QA_INBOX_AWS_ACCESS_KEY_ID",
+        "inbox_secret_key_secret": "STAGING_QA_INBOX_AWS_SECRET_ACCESS_KEY",
     },
 }
 
