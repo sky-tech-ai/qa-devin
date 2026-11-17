@@ -856,8 +856,9 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - CHECK the viewer shows page 2 of the document and the box reads 2.
 
 ### Highlight (Text Snip)
-- Select a page that has printed text. Click "Highlight" in the bottom toolbar.
-- Drag across a line of text on the page (press at one corner, release at the opposite corner; if nothing happens, click one corner and then the opposite corner).
+- Select a page that has printed text and work on that page only (Highlight only works on the selected page). Click "Highlight" in the bottom toolbar.
+- Draw a closed loop around one whole line of text: press a little above and to the left of the line, drag right along the top, down past the bottom of the line, back left along the bottom, and release near where you started. The loop must be at least 30 px tall and 30 px wide on screen. The app ignores anything smaller, including a flat stroke along the line, without any message.
+- If no toast appears, use the rectangle mode instead: click once above and to the left of the line, then click once below and to the right of it (corners at least 30 px apart vertically and horizontally).
 - CHECK a "Text copied" toast appears with "Copied: …" showing text from that area.
 - Click "Highlight" again to turn it off.
 
