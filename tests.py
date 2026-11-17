@@ -99,7 +99,7 @@ You need to:
 - Log in to the app and go to the "Cases" page. If a welcome screen or tour shows up, dismiss it ("Skip to Dashboard", "Skip Tour", "Skip for Now").
 - Click "+ Case". In the "Create Case" dialog enter the Case Name "QA UI Case <6 random digits>" and leave the other fields empty, except Referencing below.
 - Turn the "Referencing" switch on (if it is off). If a "Reference Prefix (Optional)" field appears, leave it empty.
-- CHECK a "Preview" shows an example reference number (e.g. "QAUI-000001"). Note it as PREVIEW_NUMBER.
+- CHECK a "Preview" shows an example reference number. It may use placeholders such as "CaseName" (replaced by a prefix generated from the case name) or "FileName" (replaced by the document's file name), e.g. "CaseName-000001-FileName". Note it as PREVIEW_NUMBER.
 - Click "Continue" (and "Continue" again on the document handling step, keeping "Automatic"; if a "Possible Duplicates" step appears, click "Create Case").
 - CHECK the dialog closes and the new case's page opens with its name as the title.
 - In the "Drag & drop documents, images, or audio files" area, click "Choose..." and upload the downloaded PDF.
@@ -111,13 +111,13 @@ You need to:
 From here to the end of the test, this overrides the "abort" rule above: if a CHECK fails, record it and continue with the next step. Only abort if the app is unusable.
 - CHECK a banner says "1 of 1 file still needs a referencing decision" with "Apply All" and "Skip All" buttons.
 - Click "Apply All". CHECK an "Apply Reference Numbers?" dialog says it will stamp 1 document and that stamping is permanent. Click "Apply Referencing".
-- CHECK the file's "Ref #" column shows "Stamping", then (within 5 minutes, checking every 30 seconds) a reference number with the same prefix and format as PREVIEW_NUMBER, and the banner is gone. Note the number as REF_NUMBER.
+- CHECK the file's "Ref #" column shows a reference number within 5 minutes (checking every 30 seconds; it may briefly show "Stamping" first), in PREVIEW_NUMBER's format with the placeholders filled in (e.g. "CaseName-000001-FileName" becomes something like "QUC-12-000001-sample"), and the banner is gone. Note the number as REF_NUMBER.
 - Click "Launch Sky".
 - CHECK the case workspace opens with the document in the doc list.
 - Open the document's first page in the viewer. CHECK REF_NUMBER is stamped on the page image (usually near a corner).
 - Go back to the case page. Open the file's ⋮ actions menu and choose "Remove Referencing".
 - CHECK a "Remove Reference Numbers?" dialog appears. Click "Remove Referencing".
-- CHECK "Ref #" shows "Removing", then (within 5 minutes) the number is gone and the "1 of 1 file still needs a referencing decision" banner is back.
+- CHECK within 5 minutes the number is gone from "Ref #" (it may briefly show "Removing") and the "1 of 1 file still needs a referencing decision" banner is back.
 - Click "Skip All". CHECK "Ref #" shows "Skipped" and the banner is gone.
 
 ### Global search
