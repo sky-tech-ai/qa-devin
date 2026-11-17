@@ -208,13 +208,12 @@ This creates a real (throwaway) user in the organization. Whatever happens, fini
 - Read the newest email to MEMBER_EMAIL from the QA inbox. CHECK it arrives within 2 minutes and contains a temporary password.
 - Log out. Log in with MEMBER_EMAIL and the temporary password.
 - CHECK a "Create New Password" page appears. Enter "QaMember!<6 random digits>a" as the new password (all rules in the checklist should turn green) and click "Continue".
-- CHECK you land in the app signed in as QA Member (the avatar menu shows "QA Member" and MEMBER_EMAIL).
+- CHECK you land in the app signed in as QA Member (the avatar menu shows "QA Member").
 - Log out. On the login page click "Forgot password?", enter MEMBER_EMAIL and click "Reset Password".
 - Read the newest email to MEMBER_EMAIL. CHECK it contains a link to the app's reset page with a `resetCode` parameter.
 - Open that link. Enter MEMBER_EMAIL and a new password "QaReset!<6 random digits>b", and submit.
 - CHECK the reset succeeds, then log in with MEMBER_EMAIL and the new password. CHECK you land in the app as QA Member.
-- Cleanup (always, even if a CHECK above failed): log out, log in as the QA user, go to Settings → "Team". On MEMBER_EMAIL's row click the trash icon ("Remove User") and confirm "Deactivate" in the "Deactivate Team Member" dialog.
-- CHECK the row shows a "Deactivated" badge. Click its trash icon again and confirm "Delete" in the "Delete Team Member" dialog.
+- Cleanup (always, even if a CHECK above failed): log out, log in as the QA user, go to Settings → "Team". On MEMBER_EMAIL's row click the trash icon ("Remove User") and confirm "Deactivate" in the "Deactivate Team Member" dialog. (Deactivating an active member removes them from the organization completely.)
 - CHECK MEMBER_EMAIL is no longer listed.
         """,
     ),
@@ -850,6 +849,7 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 ---
 
 ## PDF Viewer Testing
+From here to the end of the test, this overrides the "abort" rule above: if a CHECK fails, record it and continue with the next step. Only abort if the app is unusable.
 
 ### Select a Page
 - Expand a section in the doc list and click one of its page tiles.
@@ -926,7 +926,7 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - CHECK a .docx file is downloaded.
 
 ## Share the Case
-Do this part last: it logs you out. From here to the end of the test, this overrides the "abort" rule above: if a CHECK fails, record it and continue with the next step.
+Do this part last: it logs you out.
 
 {INBOX_INSTRUCTIONS}
 - Click "Share" in the doc list header.
