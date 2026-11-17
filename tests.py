@@ -32,6 +32,16 @@ DEVIN_QA_LOGIN_INSTRUCTIONS = """\
 For basic HTTP authentication, use the username:password from the {basic_auth_secret} secret. Log in using the email ({user_email_secret}) and password ({user_password_secret}) from your secrets.
 """
 
+INBOX_INSTRUCTIONS = """\
+## Reading the QA inbox
+Mail sent to any address @{inbox_domain} is stored as raw MIME files in the S3 bucket {inbox_bucket} (region {inbox_region}), under the inbox/ prefix. Read it with the AWS CLI (run `pip install awscli` if `aws` is missing), with AWS_ACCESS_KEY_ID from the {inbox_key_id_secret} secret and AWS_SECRET_ACCESS_KEY from the {inbox_secret_key_secret} secret:
+- Newest files first: `aws s3api list-objects-v2 --bucket {inbox_bucket} --prefix inbox/ --region {inbox_region} --query 'reverse(sort_by(Contents,&LastModified))[:20].[Key,LastModified]' --output text`
+- Read one: `aws s3 cp s3://{inbox_bucket}/<key> - --region {inbox_region}`
+- An email is yours only if its `To:` header is exactly the address you used. Decode the body (it may be quoted-printable or base64; Python's `email` module handles both) before looking for a code or link.
+- Mail can take up to 2 minutes to arrive; check every 15 seconds. If it hasn't arrived after 2 minutes, the CHECK that needs it fails.
+- Use a fresh address (random suffix) for every email you wait for, so old mail can't match.
+"""
+
 DOCLIST_TEST_SETUP = f"""\
 ## Test Setup Requirements
 - Log in to the app.
@@ -89,7 +99,7 @@ You need to:
 - Log in to the app and go to the "Cases" page. If a welcome screen or tour shows up, dismiss it ("Skip to Dashboard", "Skip Tour", "Skip for Now").
 - Click "+ Case". In the "Create Case" dialog enter the Case Name "QA UI Case <6 random digits>" and leave the other fields empty, except Referencing below.
 - Turn the "Referencing" switch on (if it is off). If a "Reference Prefix (Optional)" field appears, leave it empty.
-- CHECK a "Preview" shows an example reference number (e.g. "QAUI-000001"). Note it as PREVIEW_NUMBER.
+- CHECK a "Preview" shows an example reference number. It may use placeholders such as "CaseName" (replaced by a prefix generated from the case name) or "FileName" (replaced by the document's file name), e.g. "CaseName-000001-FileName". Note it as PREVIEW_NUMBER.
 - Click "Continue" (and "Continue" again on the document handling step, keeping "Automatic"; if a "Possible Duplicates" step appears, click "Create Case").
 - CHECK the dialog closes and the new case's page opens with its name as the title.
 - In the "Drag & drop documents, images, or audio files" area, click "Choose..." and upload the downloaded PDF.
@@ -101,13 +111,13 @@ You need to:
 From here to the end of the test, this overrides the "abort" rule above: if a CHECK fails, record it and continue with the next step. Only abort if the app is unusable.
 - CHECK a banner says "1 of 1 file still needs a referencing decision" with "Apply All" and "Skip All" buttons.
 - Click "Apply All". CHECK an "Apply Reference Numbers?" dialog says it will stamp 1 document and that stamping is permanent. Click "Apply Referencing".
-- CHECK the file's "Ref #" column shows "Stamping", then (within 5 minutes, checking every 30 seconds) a reference number with the same prefix and format as PREVIEW_NUMBER, and the banner is gone. Note the number as REF_NUMBER.
+- CHECK the file's "Ref #" column shows a reference number within 5 minutes (checking every 30 seconds; it may briefly show "Stamping" first), in PREVIEW_NUMBER's format with the placeholders filled in (e.g. "CaseName-000001-FileName" becomes something like "QUC-12-000001-sample"), and the banner is gone. Note the number as REF_NUMBER.
 - Click "Launch Sky".
 - CHECK the case workspace opens with the document in the doc list.
 - Open the document's first page in the viewer. CHECK REF_NUMBER is stamped on the page image (usually near a corner).
 - Go back to the case page. Open the file's ⋮ actions menu and choose "Remove Referencing".
 - CHECK a "Remove Reference Numbers?" dialog appears. Click "Remove Referencing".
-- CHECK "Ref #" shows "Removing", then (within 5 minutes) the number is gone and the "1 of 1 file still needs a referencing decision" banner is back.
+- CHECK within 5 minutes the number is gone from "Ref #" (it may briefly show "Removing") and the "1 of 1 file still needs a referencing decision" banner is back.
 - Click "Skip All". CHECK "Ref #" shows "Skipped" and the banner is gone.
 
 ### Global search
@@ -188,6 +198,23 @@ Do this part last: it logs you out.
 - CHECK the form shows field errors (e.g. "This field cannot be empty" / "Email should be example@site.com") and "You must agree to the Terms and Conditions and Privacy Policy". Do not submit the form.
 - Go back to the login page and log in with the correct email and password.
 - CHECK you land on the app's "Cases" page.
+
+### New Team Member: Invite, First Login, Password Reset
+This creates a real (throwaway) user in the organization. Whatever happens, finish with the cleanup at the end of this section: never leave the member active.
+
+{INBOX_INSTRUCTIONS}
+- Settings → "Team" → "Invite". Email: "qa+member-<6 random digits>@{{inbox_domain}}" (MEMBER_EMAIL), Name: "QA Member", Role: "Member". Click "Invite".
+- CHECK the "Success" step says "The invitation was successfully sent." Click "Close".
+- Read the newest email to MEMBER_EMAIL from the QA inbox. CHECK it arrives within 2 minutes and contains a temporary password.
+- Log out. Log in with MEMBER_EMAIL and the temporary password.
+- CHECK a "Create New Password" page appears. Enter "QaMember!<6 random digits>a" as the new password (all rules in the checklist should turn green) and click "Continue".
+- CHECK you land in the app signed in as QA Member (the avatar menu shows "QA Member").
+- Log out. On the login page click "Forgot password?", enter MEMBER_EMAIL and click "Reset Password".
+- Read the newest email to MEMBER_EMAIL. CHECK it contains a link to the app's reset page with a `resetCode` parameter.
+- Open that link. Enter MEMBER_EMAIL and a new password "QaReset!<6 random digits>b", and submit.
+- CHECK the reset succeeds, then log in with MEMBER_EMAIL and the new password. CHECK you land in the app as QA Member.
+- Cleanup (always, even if a CHECK above failed): log out, log in as the QA user, go to Settings → "Team". On MEMBER_EMAIL's row click the trash icon ("Remove User") and confirm "Deactivate" in the "Deactivate Team Member" dialog. (Deactivating an active member removes them from the organization completely.)
+- CHECK MEMBER_EMAIL is no longer listed.
         """,
     ),
     create_qa_test(
@@ -822,6 +849,7 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 ---
 
 ## PDF Viewer Testing
+From here to the end of the test, this overrides the "abort" rule above: if a CHECK fails, record it and continue with the next step. Only abort if the app is unusable.
 
 ### Select a Page
 - Expand a section in the doc list and click one of its page tiles.
@@ -895,12 +923,27 @@ Test the main case workspace flows besides the doc list and chat: the PDF viewer
 - CHECK a .docx file is downloaded.
 
 ## Share the Case
+Do this part last: it logs you out.
+
+{INBOX_INSTRUCTIONS}
 - Click "Share" in the doc list header.
 - CHECK a "Guest Access" dialog opens.
-- Enter "qa+guest-<6 random digits>@example.com" and click "Create Link".
-- CHECK a card with that email and a share link (with a "Copy" button) appears.
-- Click the trash icon ("Revoke Access") on that guest.
+- Enter "qa+guest-<6 random digits>@{{inbox_domain}}" as GUEST_EMAIL and click "Create Link".
+- CHECK a card with GUEST_EMAIL and a share link (with a "Copy" button) appears. Copy the link and note it as SHARE_LINK.
+
+### Guest Login
+- Log out (avatar in the top-right corner → "Log Out").
+- Open SHARE_LINK.
+- CHECK a "Check Your Email" page says a code was sent to GUEST_EMAIL.
+- Read the newest email to GUEST_EMAIL from the QA inbox. CHECK it arrives within 2 minutes and contains a 6-digit code.
+- Enter the code. CHECK you land in the shared case (its name is shown) and can open a document in the viewer.
+- CHECK owner-only actions are not available to the guest: no "Share" button and no way to upload files.
+- Log out, then log in again as the QA user (see the login instructions above) and open the case.
+
+### Revoke Access
+- Click "Share", then the trash icon ("Revoke Access") on GUEST_EMAIL.
 - CHECK the guest is removed from the dialog.
+- Log out and open SHARE_LINK again. CHECK an "Access Denied" page says "This share link is invalid or has expired."
         """,
     ),
     create_qa_test(
