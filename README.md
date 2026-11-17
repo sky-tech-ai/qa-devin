@@ -80,6 +80,8 @@ pip install -r requirements.txt
    - Slack Login - Email, Password and [2FA code (TOTP)](https://docs.devin.ai/onboard-devin/secrets#one-time-password)
    - Github Token - Personal Access Token - To create comments on pull requests
 
+   Sky app logins: see `ENVIRONMENTS` in `run_qa_devin.py`. Most tests share one QA user (`<ENV>_USER_EMAIL` / `<ENV>_USER_PASSWORD`). Logging out revokes a user's tokens for all of their sessions, so each test that logs out (`test-cases`, `test-case-workspace`) has its own Admin user in the same organization (`<ENV>_LOGOUT_CASES_USER_*`, `<ENV>_LOGOUT_WORKSPACE_USER_*`). A new test that logs out, changes its user's password or otherwise ends its own sessions needs its own account too (`account=` in `create_qa_test`).
+
 4. Run QA tests:
 ```bash
 python3 run_qa_devin.py
