@@ -445,9 +445,13 @@ async def _run_sessions(
     post_to_slack(links_message)
 
     progress_task = asyncio.create_task(log_progress(session_links))
-    # Use return_exceptions=True to prevent exceptions from stopping other tasks
-    results = await asyncio.gather(*eval_tasks, return_exceptions=True)
-    progress_task.cancel()
+    try:
+        # Use return_exceptions=True to prevent exceptions from stopping other tasks
+        results = await asyncio.gather(*eval_tasks, return_exceptions=True)
+    finally:
+        # A cancelled run must not sit in the progress sleep while the runner
+        # is about to kill the process.
+        progress_task.cancel()
 
     # Filter out exceptions and convert them to error results
     processed_results: list[QATestResult] = []
@@ -513,12 +517,23 @@ async def main():
 
     test_names = args.tests.split(",") if args.tests else None
 
-    # GitHub cancels a run with SIGINT, then SIGTERM. Turn both into task
-    # cancellation so the unfinished Devin sessions get terminated.
+    # The runner sends SIGINT, waits about 7.5s, then SIGTERM and kills the
+    # process. The first signal starts cleanup. A later one must not cancel
+    # that cleanup before the DELETE calls finish.
     main_task = asyncio.current_task()
+    assert main_task is not None
+    stopping = False
+
+    def stop_once() -> None:
+        nonlocal stopping
+        if stopping:
+            return
+        stopping = True
+        main_task.cancel()
+
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
-        loop.add_signal_handler(sig, main_task.cancel)
+        loop.add_signal_handler(sig, stop_once)
 
     results = await run_tests_and_send_to_slack(
         url=args.url,
