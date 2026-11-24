@@ -73,4 +73,8 @@ jobs:
             --sample-pdf-url "${{ inputs.sample_pdf_url }}"
             --johndoejunior-zip-url "${{ inputs.johndoejunior_zip_url }}")
           if [ -n "$TESTS" ]; then args+=(--tests "$TESTS"); fi
-          python3 run_qa_devin.py "${args[@]}"
+          # Replace the shell. The runner signals the step process and, once
+          # that process has exited, SIGKILLs whatever is left. Bash dies on
+          # SIGINT, so without exec Python is killed as an orphan before it
+          # can DELETE the Devin sessions.
+          exec python3 run_qa_devin.py "${args[@]}"
